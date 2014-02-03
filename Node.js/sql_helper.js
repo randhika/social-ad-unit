@@ -39,18 +39,20 @@ exports.add_account = function(account,callback) {
           } else {
             console.log(" ####### ADD_ACCOUNT SUCESS ######## "+JSON.stringify(info));
             callback(err,info.insertId);
-            if(account.type == "skype") {
+
+
+          if(account.type == "skype") {
 
               findContactBySkypeName(account.name,function(err,result) {
-                console.log(" ######### findContactByEmail ####### "+ result);
+                console.log(" ######### findContactBySkypeName ####### "+ result);
                 if( err) {
                   console.log(" ######### add user error ####### "+JSON.stringify(err));
                 } else {
                   // Add to relationship table.
                   console.log(" ######### SUCCESS 11 ####### "+JSON.stringify(result));
-                  if( result.length > 0) {
-                    console.log(" ######### SUCCESS 33 ####### "+account.deviceid);
-                    add_relationship(account.deviceid,result[0].deviceid,result[0].id,function(err,result) {
+                  if( result.length > 0 && account.deviceid != result[0].deviceid) {
+                    console.log(" ######### SUCCESS 33 ####### "+result[0].deviceid);
+                    add_relationship(account.deviceid, result[0].deviceid, result[0].id,function(err,result) {
                         console.log(" ######### add_relationship ####### "+ result);
                         if( err) {
                             console.log(" ######### add user ####### "+ JSON.stringify(err));
@@ -70,9 +72,9 @@ exports.add_account = function(account,callback) {
                 } else {
                   // Add to relationship table.
                   console.log(" ######### SUCCESS 11 ####### "+JSON.stringify(result));
-                  if( result.length > 0) {
-                    console.log(" ######### SUCCESS 33 ####### "+account.deviceid);
-                    add_relationship(account.deviceid,result[0].deviceid,result[0].id,function(err,result) {
+                  if( result.length > 0 && account.deviceid != result[0].deviceid) {
+                    console.log(" ######### SUCCESS 33 ####### "+result[0].deviceid);
+                    add_relationship(account.deviceid, result[0].deviceid, result[0].id,function(err,result) {
                         console.log(" ######### add_relationship ####### "+ result);
                         if( err) {
                             console.log(" ######### add user ####### "+ JSON.stringify(err));
@@ -82,8 +84,8 @@ exports.add_account = function(account,callback) {
                     });
                   }
                 }
-              }); 
-           }
+              });
+            }            
           }
       });
 }
@@ -115,14 +117,62 @@ exports.add_contact = function(contact,callback) {
             callback(err,null);
           } else {
             console.log(" ####### SUCESS ######## "+JSON.stringify(info));
+            var contactId = info.insertId;
             callback(err,info.insertId);
+
+
+            if(contact.type == "skype") {
+
+              findAccountBySkypeName(contact.skypeid,function(err,result) {
+                console.log(" ######### findContactBySkypeName ####### "+ result);
+                if( err) {
+                  console.log(" ######### add user error ####### "+JSON.stringify(err));
+                } else {
+                  // Add to relationship table.
+                  console.log(" ######### SUCCESS 11 ####### "+JSON.stringify(result));
+                  if( result.length > 0 && contact.deviceid != result[0].deviceid) {
+                    console.log(" ######### SUCCESS 33 ####### "+result[0].deviceid);
+                    add_relationship(contact.deviceid, result[0].deviceid, contactId,function(err,result) {
+                        console.log(" ######### add_relationship ####### "+ result);
+                        if( err) {
+                            console.log(" ######### add user ####### "+ JSON.stringify(err));
+                        } else {
+                          console.log(" ######### RELATIONSHIP SUCCESS ####### ");
+                        }
+                    });
+                  }
+                }
+              }); 
+
+            } else {
+              findAccountByEmail(contact.email,function(err,result) {
+                console.log(" ######### findContactByEmail ####### "+ result);
+                if( err) {
+                  console.log(" ######### add user error ####### "+JSON.stringify(err));
+                } else {
+                  // Add to relationship table.
+                  console.log(" ######### SUCCESS 11 ####### "+JSON.stringify(result));
+                  if( result.length > 0 && contact.deviceid != result[0].deviceid) {
+                    console.log(" ######### SUCCESS 33 ####### "+result[0].deviceid);
+                    add_relationship(contact.deviceid, result[0].deviceid, contactId,function(err,result) {
+                        console.log(" ######### add_relationship ####### "+ result);
+                        if( err) {
+                            console.log(" ######### add user ####### "+ JSON.stringify(err));
+                        } else {
+                          console.log(" ######### RELATIONSHIP SUCCESS ####### ");
+                        }
+                    });
+                  }
+                }
+              });
+            }
           }
       });
 }
 
 exports.getAppRecommendation = function(deviceid,callback) {
-console.log(" ####### getAppRecommendation ######## "+ deviceid);
-  client.query("select * from relationship where deviceid1=?",[deviceid],
+  console.log(" ####### getAppRecommendation ######## "+ deviceid);
+  client.query("select * from relationship where deviceid1=? or deviceid2=?",[deviceid,deviceid],
   function(error, result) {
       if( error) {
         console.log(" ####### ERROR ######## "+JSON.stringify(error));
@@ -130,13 +180,16 @@ console.log(" ####### getAppRecommendation ######## "+ deviceid);
       } else {
         console.log(" ####### SUCESS ######## "+JSON.stringify(result));
         console.log(" ####### SUCESS ######## "+result.length);
-        if( result.lenth > 0) {
+        if( result.length > 0) {
         var index = Math.floor((Math.random()*result.length)+1);
         console.log(" ####### SUCESS index ######## "+ index);
-        var deviceid1 = result[index-1].deviceid1;
-        var deviceid2 = result[index-1].deviceid2;
-        var contactsid = result[index-1].contactsid;
 
+        var deviceid1;
+        var deviceid2;
+        deviceid1 = result[index-1].deviceid1;
+        deviceid2 = result[index-1].deviceid2;
+
+        var contactsid = result[index-1].contactsid;
         console.log(" ####### SUCESS deviceid2 ######## "+ deviceid2);
 
         findAppsInstalled(deviceid1,deviceid2,function(error1,result1) {
@@ -144,17 +197,19 @@ console.log(" ####### getAppRecommendation ######## "+ deviceid);
           if( error1) {
             console.log(" ####### appsInstalled Error ######## "+JSON.stringify(error1));
           } else {
+
             var index = Math.floor((Math.random()*result1.length)+1);
             console.log(" ####### App on Random is  ######## "+ result1[index-1].package+" : "+result1[index-1].name);
-
+            var appChoosen = result1[index-1];
             getContact(contactsid, function ( error2,result2) {
               if( error2 ) {
                 console.log(" ####### getContact Error ######## "+JSON.stringify(error2));
                 callback(error2,null);
               } else {
                 console.log(" ####### getContact Success ######## "+JSON.stringify(result2));
-                var jsonResponse = [{status:'404'},{errorcode:'3002',error:"Invalid accesscode"}];
-                //callback(null,info.insertId);
+                var jsonResponse = [{appinstalled:appChoosen},{contact:result2}];                
+                console.log(" ####### getContact JSON Response ######## "+ JSON.stringify(jsonResponse));
+                callback(null,jsonResponse);
               }
             });
           }
@@ -211,6 +266,51 @@ findAppsInstalled = function(deviceid1,deviceid2,callback) {
       });
 }
 
+findAccountByEmail = function(email,callback) {
+      client.query("select * from accounts where name=?",[email], 
+        function(err, info) {
+          // callback function returns last insert id
+          if( err) {
+            console.log(" ####### ERROR ######## "+JSON.stringify(err));
+            callback(err,null);
+          } else {
+            console.log(" ####### findContactByEmail SUCESS ######## "+JSON.stringify(info));
+            callback(err,info);
+          }
+      });
+}
+
+findAccountByPhoneNumber = function(phonenumber) {
+      client.query("select * from accounts where name=?", 
+        [phonenumber], 
+        function(err, info) {
+          // callback function returns last insert id
+          if( err) {
+            console.log(" ####### ERROR ######## "+JSON.stringify(err));
+            callback(err,null);
+          } else {
+            console.log(" ####### SUCESS ######## "+JSON.stringify(info));
+            callback(err,info);
+          }
+      });
+}
+
+findAccountBySkypeName = function(skypename,callback) {
+      client.query("select * from accounts where name=? and type=?", 
+        [skypename,"skype"], 
+        function(err, info) {
+          // callback function returns last insert id
+          if( err) {
+            console.log(" ####### ERROR ######## "+JSON.stringify(err));
+            callback(err,null);
+          } else {
+            console.log(" ####### SUCESS ######## "+JSON.stringify(info));
+            callback(err,info);
+          }
+      });
+}
+
+
 findContactByEmail = function(email,callback) {
       client.query("select * from contacts where email=?",[email], 
         function(err, info) {
@@ -235,7 +335,7 @@ findContactByPhoneNumber = function(phonenumber) {
             callback(err,null);
           } else {
             console.log(" ####### SUCESS ######## "+JSON.stringify(info));
-            callback(err,info.insertId);
+            callback(err,info);
           }
       });
 }

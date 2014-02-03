@@ -9,34 +9,28 @@
 
 	<ImageView
         android:id="@+id/friendicon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"/>
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_centerHorizontal="true"
+        android:src="@drawable/ic_launcher"/>
     
     <TextView
-        android:id="@+id/text"
+        android:id="@+id/alert"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:layout_below="@id/friendicon"
         android:layout_centerHorizontal="true"
-        android:text="your contact have this app which you dont have. Would you like to try it for free ?" />
-        
-    <ImageView
-        android:id="@+id/appicon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:layout_centerHorizontal="true"
-        android:layout_below="@id/text"/>
-    
+        android:textAppearance="?android:attr/textAppearanceMedium"/>
+
     <Button
-        android:id="@+id/text"
+        android:id="@+id/installnow"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:layout_centerHorizontal="true"
-        android:layout_below="@id/appicon"
+        android:layout_below="@id/alert"
+        android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="Install Now" />
     
     

@@ -1,14 +1,15 @@
 package com.example.socialaddemo;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
+import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -21,6 +22,7 @@ import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
@@ -83,8 +85,7 @@ public class MainActivity extends Activity {
 		createAppsInstalled.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				//sendAppsInstalled();
-				createAccount();
+				sendAppsInstalled();
 			}
 		});
 		
@@ -103,6 +104,7 @@ public class MainActivity extends Activity {
 		});
 		
 		mProgressDialog = new ProgressDialog(this);
+		mProgressDialog.setMessage("Please wait");
 		mVolleyQueue = SocialAdDemoVolley.getRequestQueue();
 		//getAccounts();
 		//Util.getAppsInstalled(this);
@@ -145,11 +147,13 @@ public class MainActivity extends Activity {
 					if( responseJson.has("id")) {
 						String deviceId = responseJson.getString("id");
 						SharedPreferenceManager.setString(SharedPreferenceManager.PreferenceKeys.DEVICE_ID, deviceId);
+						SharedPreferenceManager.setBoolean(SharedPreferenceManager.PreferenceKeys.IS_DEVICE_CREATED, true);
+						createDevice.setEnabled(false);
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-				SharedPreferenceManager.setBoolean(SharedPreferenceManager.PreferenceKeys.IS_DEVICE_CREATED, true);
+				
 				hideProgressDialog();
 				showMessage("Device Successfully Created ",false);
 			}
@@ -183,6 +187,7 @@ public class MainActivity extends Activity {
 			public void onResponse(JSONObject response) {
 				System.out.println("######## createDevice SUCCESS ######### "+response.toString());
 				SharedPreferenceManager.setBoolean(SharedPreferenceManager.PreferenceKeys.IS_ACCOUNT_CREATED, true);
+				createAccount.setEnabled(false);
 				hideProgressDialog();
 				showMessage("Account Successfully Created ",false);
 			}
@@ -210,10 +215,13 @@ public class MainActivity extends Activity {
 				synchronized (this) {
 				final PackageManager packageManager = MainActivity.this.getPackageManager();
 				List<PackageInfo> packagesInfo = packageManager.getInstalledPackages(PackageManager.GET_ACTIVITIES | PackageManager.GET_UNINSTALLED_PACKAGES);
-				JSONArray installedArray = new JSONArray();
+				
 				for (PackageInfo pi : packagesInfo) {
 					JSONObject appsJson = new JSONObject();
+					JSONArray installedArray = new JSONArray();
 					if (pi.packageName != null && pi.packageName.contains("com.android") == false &&
+							pi.packageName.contains("com.htc") == false &&
+							pi.packageName.equals("android") == false &&
 							pi.packageName.contains("com.google.android") == false) {
 						System.out.println("########## packageName ######## "+pi.packageName);
 						System.out.println("########## name ######## "+packageManager.getApplicationLabel(pi.applicationInfo));
@@ -224,7 +232,7 @@ public class MainActivity extends Activity {
 						    String bitmapString  = Util.BitMapToString(Util.downSize(bitmap,40));
 							appsJson.put("name",packageManager.getApplicationLabel(pi.applicationInfo) );
 							appsJson.put("package", pi.packageName);
-							appsJson.put("appicon", bitmapString);
+							//appsJson.put("appicon", bitmapString);
 						} catch (Exception e) {
 							e.printStackTrace();
 						}
@@ -268,7 +276,7 @@ public class MainActivity extends Activity {
 						mVolleyQueue.add(jsonRequest);		
 						try {
 							System.out.println("######## Thread is waiting ######## ");
-							wait(3000);
+							//wait(1000);
 						} catch (Exception e) {
 							e.printStackTrace();
 						}
@@ -307,13 +315,14 @@ public class MainActivity extends Activity {
 		
 					ContentResolver contentResolver = getContentResolver();
 		
-					Cursor cursor = contentResolver.query(CONTENT_URI, null,null, null, null);	
-		
-					boolean canBreak = false;
+					Cursor cursor = contentResolver.query(CONTENT_URI, null,
+							ContactsContract.Contacts.IN_VISIBLE_GROUP + "=1", 
+							null, null);	
 
 					// Loop for every contact in the phone
 					if (cursor.getCount() > 0) {
-		
+						System.out.println("########### total count ########## "+cursor.getCount());
+						int count = 0;
 						while (cursor.moveToNext()) {
 							String bitmap = null;
 							String phoneNumber = null;
@@ -336,17 +345,16 @@ public class MainActivity extends Activity {
 								try {
 									Bitmap bm = Util.decodeUri(MainActivity.this,Uri.parse(phoneURI),50);
 									bitmap = Util.BitMapToString(bm);
-									contactJson.put("bitmap",bitmap);
-									//contactJson.put("bitmap","");
+									//contactJson.put("bitmap",bitmap);
 								} catch (Exception e) {
 									e.printStackTrace();
 								}
-								canBreak = true;
 							}
 							output.append("\n First Name:" + name); 
 							int hasPhoneNumber = Integer.parseInt(cursor.getString(cursor.getColumnIndex( HAS_PHONE_NUMBER )));
 		
 							if (hasPhoneNumber > 0) {
+								try {
 								// Query and loop for every phone number of the contact
 								Cursor phoneCursor = contentResolver.query(PhoneCONTENT_URI, null, Phone_CONTACT_ID + " = ?", new String[] { contact_id }, null);
 		
@@ -357,6 +365,9 @@ public class MainActivity extends Activity {
 		
 								contactJson.put("phonenumber",phoneNumber);
 								phoneCursor.close();
+								} catch ( Exception e) {
+									e.printStackTrace();
+								}
 							}
 							
 							// Query and loop for every email of the contact
@@ -429,8 +440,6 @@ public class MainActivity extends Activity {
 							e.printStackTrace();
 						}
 						
-						System.out.println("########### JSON reqbody is ########## "+reqBody.toString());
-						
 						String url = ServiceConfig.getURL(SERVICES.CREATE_CONTACTS);
 						//System.out.println("######## CreateDevice appsInstalled ######## "+reqBody.toString());
 						MyJsonRequest jsonRequest = new MyJsonRequest(Request.Method.POST, 
@@ -461,8 +470,8 @@ public class MainActivity extends Activity {
 						mVolleyQueue.add(jsonRequest);		
 						try {
 							System.out.println("######## Thread is waiting ######## ");
-							if( bitmap != null)
-								wait(2000);
+							//if( bitmap != null)
+								wait(1000);
 						} catch (Exception e) {
 							e.printStackTrace();
 						}
@@ -480,35 +489,29 @@ public class MainActivity extends Activity {
 	
 	private void fetchAd() {
 		
-		String url = ServiceConfig.getURL(SERVICES.GET_SOCIAL_AD);
-		
-		JSONObject reqBody = new JSONObject();
 		String deviceId = SharedPreferenceManager.getString(SharedPreferenceManager.PreferenceKeys.DEVICE_ID, "");
 		if( deviceId.length() == 0) {
 			showMessage("Invalid Deviceid found",false);
 			return;
 		}
 		
-		try {
-			reqBody.put("deviceId",deviceId);
-		} catch ( Exception e) {
-			e.printStackTrace();
-		}
+		String url = ServiceConfig.getURL(SERVICES.GET_SOCIAL_AD)+"/?deviceId="+deviceId;
 		
-		MyJsonRequest jsonRequest = new MyJsonRequest(Request.Method.GET, 
+		MyStringRequest jsonRequest = new MyStringRequest(Request.Method.GET, 
 				url, 
-				reqBody,
-				new Response.Listener<JSONObject>() {
+				null,
+				new Response.Listener<String>() {
 			@Override
-			public void onResponse(JSONObject response) {
-				System.out.println("######## Send appsInstalled SUCCESS ######### "+response.toString());
+			public void onResponse(String response) {
+				System.out.println("######## fetchAd SUCCESS ######### "+response.toString());
 				//showMessage("Successfully sent Apps Installed",false);
+				showAd(response);
 			}
 		}, new Response.ErrorListener() {
 			@Override
 			public void onErrorResponse(VolleyError error) {
 				//Ignore the error message. As this operation is carried out in background.
-				System.out.println("######## send appsInstalled ERROR ######### "+error);
+				System.out.println("######## fetchAd ERROR ######### "+error);
 				showMessage("Some error happened",false);
 			}
 		});
@@ -518,10 +521,53 @@ public class MainActivity extends Activity {
 		mVolleyQueue.add(jsonRequest);	
 	}
 	
-	private void showAd() {
+	private void showAd(String response) {
+
+		try {
+			JSONArray responseArray = new JSONArray(response);
+			JSONObject appInstalled = (JSONObject) responseArray.get(0);
+			JSONObject contact = (JSONObject) responseArray.get(1);
+			
+			JSONObject appInstalledJson = appInstalled.getJSONObject("appinstalled");
+			final String appPackageName = appInstalledJson.getString("package");
+			final String appName = appInstalledJson.getString("name");
+			
+			System.out.println(appInstalled.toString());
+			System.out.println(contact.toString());
 		
+			JSONArray contactsArray = contact.getJSONArray("contact");
+			JSONObject contactJson = contactsArray.getJSONObject(0);
+			String contactName = contactJson.getString("name");
+			
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		    LayoutInflater inflater = this.getLayoutInflater();
+		    View layout = inflater.inflate(R.layout.social_ad_layout, null);
+		    String messageFormat = getResources().getString(R.string.social_ad_alert);  
+		    String alertMsg = String.format(messageFormat, contactName, appName); 
+		    TextView tx = (TextView) layout.findViewById(R.id.alert);
+		    tx.setText(alertMsg);
+	    
+		    Button install = (Button) layout.findViewById(R.id.installnow);
+		    install.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					
+					try {
+					    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + appPackageName)));
+					} catch (android.content.ActivityNotFoundException anfe) {
+					    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=" + appPackageName)));
+					}
+				}
+			});
+	    		
+		    builder.setView(layout);
+		    
+		    AlertDialog dialog = builder.create();
+		    dialog.show();
 		
-		
+		} catch ( Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public void onDestroy() {

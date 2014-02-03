@@ -3,6 +3,7 @@ var http = require('http');
 var express = require('express');
 var app = express();
 var sql_model = require('./sql_helper');
+var url = require('url');
 var server = http.createServer(app);
 
 server.listen(3000);
@@ -154,17 +155,21 @@ app.post('/contacts', function(req, res) {
 });
 
 
-app.get('/fetch_socialAd', function(req, res) {
+app.get('/fetch_social_ad', function(req, res) {
 
-	console.log(" ######### GET /fetchAd ########### "+req.body.deviceId);
+	var queryData = url.parse(req.url, true).query;
 
-	sql_model.getAppRecommendation(req.body.deviceId,function(err,result) {
+	if (queryData.deviceId) {
+		console.log(" ######### GET /fetchAd ########### "+queryData.deviceId);
+	}
+	
+	sql_model.getAppRecommendation(queryData.deviceId,function(err,result) {
 	    console.log(" ######### getAppRecommendation ####### "+ result);
 	    if( err) {
 	        res.send(JSON.stringify(err));
 	    } else {
-	    	
+			res.json(result);    	
 	    }		
 	});
-	res.json({});
+	
 });
