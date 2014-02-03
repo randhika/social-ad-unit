@@ -130,6 +130,7 @@ console.log(" ####### getAppRecommendation ######## "+ deviceid);
       } else {
         console.log(" ####### SUCESS ######## "+JSON.stringify(result));
         console.log(" ####### SUCESS ######## "+result.length);
+        if( result.lenth > 0) {
         var index = Math.floor((Math.random()*result.length)+1);
         console.log(" ####### SUCESS index ######## "+ index);
         var deviceid1 = result[index-1].deviceid1;
@@ -157,8 +158,9 @@ console.log(" ####### getAppRecommendation ######## "+ deviceid);
               }
             });
           }
-
         });
+        
+        }
       }
   });
 
@@ -248,7 +250,7 @@ findContactBySkypeName = function(skypename,callback) {
             callback(err,null);
           } else {
             console.log(" ####### SUCESS ######## "+JSON.stringify(info));
-            callback(err,info.insertId);
+            callback(err,info);
           }
       });
 }
