@@ -59,5 +59,15 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="10dp"
         android:layout_below="@id/createContacts"
-        android:text="Fetch Social Ad" />     
+        android:text="Fetch Social Ad" />
+    
+    <Button
+        android:id="@+id/fetchAd1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:layout_below="@id/fetchAd"
+        android:text="Fetch Social Ad1" />     
+    
 </RelativeLayout>

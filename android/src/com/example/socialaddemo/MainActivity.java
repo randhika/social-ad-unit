@@ -45,6 +45,7 @@ public class MainActivity extends Activity {
 	Button createAppsInstalled;
 	Button createContacts;
 	Button fetchAd;
+	Button fetchAd1;
 	RequestQueue mVolleyQueue;
 	ProgressDialog mProgressDialog;
 	
@@ -59,7 +60,7 @@ public class MainActivity extends Activity {
 		createAppsInstalled = (Button) findViewById(R.id.createAppsinstalled);
 		createContacts = (Button) findViewById(R.id.createContacts);
 		fetchAd = (Button) findViewById(R.id.fetchAd);
-		
+		fetchAd1 = (Button) findViewById(R.id.fetchAd1);
 		if(SharedPreferenceManager.getBoolean(SharedPreferenceManager.PreferenceKeys.IS_DEVICE_CREATED, false)) {
 			createDevice.setEnabled(false);
 		}
@@ -107,7 +108,14 @@ public class MainActivity extends Activity {
 		fetchAd.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				fetchAd();
+				fetchAd(false);
+			}
+		});
+
+		fetchAd1.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				fetchAd(true);
 			}
 		});
 		
@@ -508,7 +516,7 @@ public class MainActivity extends Activity {
 			
 	}
 	
-	private void fetchAd() {
+	private void fetchAd(final boolean showAd1) {
 		
 		String deviceId = SharedPreferenceManager.getString(SharedPreferenceManager.PreferenceKeys.DEVICE_ID, "");
 		if( deviceId.length() == 0) {
@@ -526,7 +534,16 @@ public class MainActivity extends Activity {
 			public void onResponse(String response) {
 				System.out.println("######## fetchAd SUCCESS ######### "+response.toString());
 				//showMessage("Successfully sent Apps Installed",false);
-				showAd(response);
+				try {
+					JSONArray responseArray = new JSONArray(response);
+					if( showAd1 ) {
+						showAd1(response);
+					} else {
+						showAd(response);
+					}
+				} catch ( Exception e) {
+					e.printStackTrace();
+				}
 			}
 		}, new Response.ErrorListener() {
 			@Override
@@ -548,37 +565,27 @@ public class MainActivity extends Activity {
 
 		try {
 			JSONArray responseArray = new JSONArray(response);
-			JSONObject appInstalled = (JSONObject) responseArray.get(0);
-			JSONObject contact = (JSONObject) responseArray.get(1);
+			JSONObject resultJson = (JSONObject) responseArray.get(0);
 			
-			JSONObject appInstalledJson = appInstalled.getJSONObject("appinstalled");
+			JSONObject appInstalledJson = resultJson.getJSONObject("appinstalled");
 			final String appPackageName = appInstalledJson.getString("package");
 			final String appName = appInstalledJson.getString("name");
-			
-			System.out.println(appInstalled.toString());
-			System.out.println(contact.toString());
 		
-			JSONArray contactsArray = contact.getJSONArray("contact");
-			JSONObject contactJson = contactsArray.getJSONObject(0);
+			JSONObject contactJson = resultJson.getJSONObject("contact");
 			String contactName = contactJson.getString("name");
 			String contact_id = contactJson.getString("contact_id");
 			String phoneURI = "content://com.android.contacts/contacts/"+contact_id+"/photo";
-//			String bitmapString = contactJson.getString("thumbnail");
 			
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		    LayoutInflater inflater = this.getLayoutInflater();
 		    View layout = inflater.inflate(R.layout.social_ad_layout, null);
 		    String messageFormat = getResources().getString(R.string.social_ad_alert);  
 		    String alertMsg = String.format(messageFormat, contactName, appName); 
+
 		    TextView tx = (TextView) layout.findViewById(R.id.alert);
 		    tx.setText(alertMsg);
 	    
 		    ImageView profile = (RoundedImageView) layout.findViewById(R.id.friendicon);
-		    
-		    /*if(bitmapString != null  && bitmapString.length() > 0 ) {
-		    	Bitmap bm = Util.StringToBitMap(bitmapString);
-		    	profile.setImageBitmap(bm);
-		    }*/
 		    
 			Bitmap bm = Util.decodeUri(MainActivity.this,Uri.parse(phoneURI),50);
 			profile.setImageBitmap(bm);
@@ -606,6 +613,106 @@ public class MainActivity extends Activity {
 			e.printStackTrace();
 		}
 	}
+	
+	
+	private void showAd1(String response) {
+	
+		try {
+			JSONArray responseArray = new JSONArray(response);
+			
+			String contactName1 = null;
+			String contactName2 = null;
+			
+			String phoneURI1 = null;
+			String phoneURI2 = null;
+			
+			String contact_id1 = null;
+			String contact_id2 = null;
+			
+			JSONObject resultJson = (JSONObject) responseArray.get(0);
+			
+			JSONObject appInstalledJson = resultJson.getJSONObject("appinstalled");
+			final String appPackageName1 = appInstalledJson.getString("package");
+			final String appName1 = appInstalledJson.getString("name");
+		
+			JSONObject contactJson = resultJson.getJSONObject("contact");
+			contactName1 = contactJson.getString("name");
+			contact_id1 = contactJson.getString("contact_id");
+			phoneURI1 = "content://com.android.contacts/contacts/"+contact_id1+"/photo";
+
+			resultJson = (JSONObject) responseArray.get(1);
+			
+			appInstalledJson = resultJson.getJSONObject("appinstalled");
+			final String appPackageName2 = appInstalledJson.getString("package");
+			final String appName2 = appInstalledJson.getString("name");
+			
+			contactJson = resultJson.getJSONObject("contact");
+			contactName2 = contactJson.getString("name");
+			contact_id2 = contactJson.getString("contact_id");
+			phoneURI2 = "content://com.android.contacts/contacts/"+contact_id2+"/photo";
+
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		    LayoutInflater inflater = this.getLayoutInflater();
+		    View layout = inflater.inflate(R.layout.social_ad_layout1, null);
+		    String messageFormat = getResources().getString(R.string.social_ad_alert);  
+		    
+		    String alertMsg1 = String.format(messageFormat, contactName1, appName1); 
+	
+		    TextView tx = (TextView) layout.findViewById(R.id.alert);
+		    tx.setText(alertMsg1);
+	    
+		    ImageView profile = (ImageView) layout.findViewById(R.id.friendicon);
+			Bitmap bm = Util.decodeUri(MainActivity.this,Uri.parse(phoneURI1),50);
+			profile.setImageBitmap(bm);
+			
+		    Button install = (Button) layout.findViewById(R.id.installnow);
+		    install.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					
+					try {
+					    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + appPackageName1)));
+					} catch (android.content.ActivityNotFoundException anfe) {
+					    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=" + appPackageName1)));
+					}
+					dialog.dismiss();
+				}
+			});
+		    
+		    TextView tx1 = (TextView) layout.findViewById(R.id.alert1);
+		    String alertMsg2 = String.format(messageFormat, contactName2, appName2); 
+		    tx1.setText(alertMsg2);
+	    
+		    ImageView profile1 = (ImageView) layout.findViewById(R.id.friendicon1);
+			bm = Util.decodeUri(MainActivity.this,Uri.parse(phoneURI2),50);
+			profile1.setImageBitmap(bm);
+			
+		    install = (Button) layout.findViewById(R.id.installnow1);
+		    install.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					
+					try {
+					    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + appPackageName2)));
+					} catch (android.content.ActivityNotFoundException anfe) {
+					    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=" + appPackageName2)));
+					}
+					dialog.dismiss();
+				}
+			});
+	    		
+		    builder.setView(layout);
+		    
+		    dialog = builder.create();
+		    dialog.show();
+		
+		} catch ( Exception e) {
+			e.printStackTrace();
+		}
+		
+		
+	}
+	
 	
 	public void onDestroy() {
 		super.onDestroy();
