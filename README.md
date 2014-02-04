@@ -115,13 +115,16 @@ Tables Created:
 REST Apis:
 
 POST: /device
-{
+
+```{
     "deviceId": "aed233-92kskdj83",
     "os": "android"
 }
+```
 
 POST: /account
-{
+
+```{
     "accounts": [
         {
             "name": "13202008820",
@@ -137,10 +140,11 @@ POST: /account
         },
     ],
     "deviceId": "8"
-}
+}```
+
 
 POST /appsinstalled
-{
+```{
     "deviceId": "8", 
     "installed": [
         {
@@ -154,10 +158,10 @@ POST /appsinstalled
             "package": "com.twitter"
         }
     ]
-}
+}```
 
 POST /contacts
-{
+```{
     "contacts": [
         {
             "email": "naveen4952@gmail.com",
@@ -168,7 +172,7 @@ POST /contacts
         }
     ],
     "deviceId": "6"
-}
+}```
 
 GET /fetch_social_ad
 {
