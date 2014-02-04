@@ -5,10 +5,10 @@ Proof of concept for Social Ad Unit
 
 
 
-![alt text](https://github.com/smanikandan14/social-ad-unit/blob/master/Snapshot1.png "")
+![alt text](https://raw2.github.com/smanikandan14/social-ad-unit/master/Snapshot1.png "")
 
 
-![alt text](https://github.com/smanikandan14/social-ad-unit/blob/master/Snapshot2.png "")
+![alt text](https://raw2.github.com/smanikandan14/social-ad-unit/master/Snapshot2.png "")
 
 Tables Created:
 1- device
