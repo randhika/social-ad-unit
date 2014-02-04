@@ -84,6 +84,46 @@ GET /fetch_social_ad
 {
 "deviceId":"8"
 }
+
+response:
+----------
+[
+    {
+        "appinstalled": {
+            "appicon": "",
+            "deviceid": 1,
+            "id": 5,
+            "name": "Instagram",
+            "package": "com.instagram.android"
+        },
+        "contact": {
+            "contact_id": "1235",
+            "contactsid": 123,
+            "deviceid1": 3,
+            "deviceid2": 1,
+            "id": 6,
+            "name": "Maheshwari"
+        }
+    },
+    {
+        "appinstalled": {
+            "appicon": "",
+            "deviceid": 4,
+            "id": 171,
+            "name": "Smart Measure",
+            "package": "kr.sira.measure"
+        },
+        "contact": {
+            "contact_id": "1236",
+            "contactsid": 124,
+            "deviceid1": 3,
+            "deviceid2": 4,
+            "id": 7,
+            "name": "W3i"
+        }
+    }
+]
+
 ```
 
 
