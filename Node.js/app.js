@@ -118,7 +118,7 @@ app.post('/contacts', function(req, res) {
 		var phnumber="";
 		var type="";
 		var skype_id="";
-		var bitmap="";
+		var contact_id="";
 	   for(key in req.body.contacts[i]) {
 	  		if( key == "name") {
 	  			name = req.body.contacts[i][key];
@@ -130,14 +130,14 @@ app.post('/contacts', function(req, res) {
 	  			type = req.body.contacts[i][key];
 	  		} else if ( key == "imname") {
 	  			skype_id = req.body.contacts[i][key];
-	  		} else if ( key == "bitmap") {
-	  			bitmap = req.body.contacts[i][key];
+	  		} else if ( key == "contact_id") {
+	  			contact_id = req.body.contacts[i][key];
 	  		}
 	  		console.log("######## Key Value ###########"+key +" : "+ req.body.contacts[i][key]);
 		}  	
 
 	  	var contact = {
-			deviceid:req.body.deviceId, name:name, email:email, ph:phnumber, type:type, skypeid:skype_id, bitmap:bitmap
+			deviceid:req.body.deviceId, name:name, email:email, ph:phnumber, type:type, skypeid:skype_id, contact_id:contact_id
 		};
 		
 		// Add to sql_model.

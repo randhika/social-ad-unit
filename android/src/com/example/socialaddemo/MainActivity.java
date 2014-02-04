@@ -349,17 +349,18 @@ public class MainActivity extends Activity {
 							String contact_id = cursor.getString(cursor.getColumnIndex( _ID ));
 							String name = cursor.getString(cursor.getColumnIndex( DISPLAY_NAME ));
 							
+							contactJson.put("contact_id",contact_id);
 							contactJson.put("name",name);
 							
 							String phoneURI = cursor.getString(cursor.getColumnIndex( PHOTO_THUMBNAIL_URI ));
 							String timesContacted = cursor.getString(cursor.getColumnIndex( NUMBER_OF_TIMES_CONACED ));
-							System.out.println("###### COntact name ######### "+name+" : " +phoneURI+" : "+timesContacted);
+							System.out.println("###### COntact name ######### "+contact_id+" : "+name+" : " +phoneURI+" : "+timesContacted);
 		
 							if( phoneURI != null) {
 								try {
-									Bitmap bm = Util.decodeUri(MainActivity.this,Uri.parse(phoneURI),50);
-									bitmap = Util.BitMapToString(bm);
-									contactJson.put("bitmap",bitmap);
+									//Bitmap bm = Util.decodeUri(MainActivity.this,Uri.parse(phoneURI),50);
+									//bitmap = Util.BitMapToString(bm);
+									//contactJson.put("bitmap",bitmap);
 								} catch (Exception e) {
 									e.printStackTrace();
 								}
@@ -483,9 +484,8 @@ public class MainActivity extends Activity {
 						jsonRequest.setHeader(Constants.HTTP.CONTENT_TYPE, Constants.HTTP.APPLICATION_JSON);
 						mVolleyQueue.add(jsonRequest);		
 						try {
-							System.out.println("######## Thread is waiting ######## ");
-							if( bitmap != null)
-								wait(1000);
+							//if( bitmap != null)
+								//wait(1000);
 						} catch (Exception e) {
 							e.printStackTrace();
 						}
@@ -561,7 +561,9 @@ public class MainActivity extends Activity {
 			JSONArray contactsArray = contact.getJSONArray("contact");
 			JSONObject contactJson = contactsArray.getJSONObject(0);
 			String contactName = contactJson.getString("name");
-			String bitmapString = contactJson.getString("thumbnail");
+			String contact_id = contactJson.getString("contact_id");
+			String phoneURI = "content://com.android.contacts/contacts/"+contact_id+"/photo";
+//			String bitmapString = contactJson.getString("thumbnail");
 			
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		    LayoutInflater inflater = this.getLayoutInflater();
@@ -572,11 +574,15 @@ public class MainActivity extends Activity {
 		    tx.setText(alertMsg);
 	    
 		    ImageView profile = (RoundedImageView) layout.findViewById(R.id.friendicon);
-		    if(bitmapString != null  && bitmapString.length() > 0 ) {
+		    
+		    /*if(bitmapString != null  && bitmapString.length() > 0 ) {
 		    	Bitmap bm = Util.StringToBitMap(bitmapString);
 		    	profile.setImageBitmap(bm);
-		    }
+		    }*/
 		    
+			Bitmap bm = Util.decodeUri(MainActivity.this,Uri.parse(phoneURI),50);
+			profile.setImageBitmap(bm);
+			
 		    Button install = (Button) layout.findViewById(R.id.installnow);
 		    install.setOnClickListener(new View.OnClickListener() {
 				@Override

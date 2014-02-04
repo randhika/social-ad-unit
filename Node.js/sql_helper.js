@@ -108,8 +108,8 @@ exports.add_appsinstalled = function(installed,callback) {
 
 exports.add_contact = function(contact,callback) {
       console.log(" ####### SQL add device ########### "+contact.deviceid+" : "+contact.name+" : "+contact.email+" : "+contact.ph+" : "+contact.skypeid);
-      client.query("insert into contacts (deviceid,name,email,phonenumber,type,skype_id,thumbnail) values (?,?,?,?,?,?,?)", 
-        [contact.deviceid, contact.name, contact.email, contact.ph, contact.type, contact.skypeid, contact.bitmap],
+      client.query("insert into contacts (deviceid,name,email,phonenumber,type,skype_id,contact_id) values (?,?,?,?,?,?,?)", 
+        [contact.deviceid, contact.name, contact.email, contact.ph, contact.type, contact.skypeid, contact.contact_id],
         function(err, info) {
           // callback function returns last insert id
           if( err) {
