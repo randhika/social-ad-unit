@@ -11,7 +11,7 @@ public class ServiceConfig {
 	}
 
 	// Check the IP address of the local server machine
-	private static final String PUBLIC_BETA_IP = "10.12.22.68:3000";
+	private static final String PUBLIC_BETA_IP = "192.168.1.2:3000";
 
 	//Change the values accordingly for test server and production server.
 	private static final String PUBLIC_SERVER_IP = "ec2-54-242-153-20.compute-1.amazonaws.com:3000";

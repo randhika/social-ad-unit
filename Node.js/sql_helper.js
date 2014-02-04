@@ -52,7 +52,7 @@ exports.add_account = function(account,callback) {
                   console.log(" ######### SUCCESS 11 ####### "+JSON.stringify(result));
                   if( result.length > 0 && account.deviceid != result[0].deviceid) {
                     console.log(" ######### SUCCESS 33 ####### "+result[0].deviceid);
-                    add_relationship(account.deviceid, result[0].deviceid, result[0].id,function(err,result) {
+                    add_relationship(result[0].deviceid, account.deviceid, result[0].id,function(err,result) {
                         console.log(" ######### add_relationship ####### "+ result);
                         if( err) {
                             console.log(" ######### add user ####### "+ JSON.stringify(err));
@@ -74,7 +74,7 @@ exports.add_account = function(account,callback) {
                   console.log(" ######### SUCCESS 11 ####### "+JSON.stringify(result));
                   if( result.length > 0 && account.deviceid != result[0].deviceid) {
                     console.log(" ######### SUCCESS 33 ####### "+result[0].deviceid);
-                    add_relationship(account.deviceid, result[0].deviceid, result[0].id,function(err,result) {
+                    add_relationship(result[0].deviceid, account.deviceid,result[0].id,function(err,result) {
                         console.log(" ######### add_relationship ####### "+ result);
                         if( err) {
                             console.log(" ######### add user ####### "+ JSON.stringify(err));
@@ -172,7 +172,7 @@ exports.add_contact = function(contact,callback) {
 
 exports.getAppRecommendation = function(deviceid,callback) {
   console.log(" ####### getAppRecommendation ######## "+ deviceid);
-  client.query("select * from relationship where deviceid1=? or deviceid2=?",[deviceid,deviceid],
+  client.query("select * from relationship where deviceid1=?",[deviceid],
   function(error, result) {
       if( error) {
         console.log(" ####### ERROR ######## "+JSON.stringify(error));
@@ -181,40 +181,49 @@ exports.getAppRecommendation = function(deviceid,callback) {
         console.log(" ####### SUCESS ######## "+JSON.stringify(result));
         console.log(" ####### SUCESS ######## "+result.length);
         if( result.length > 0) {
-        var index = Math.floor((Math.random()*result.length)+1);
-        console.log(" ####### SUCESS index ######## "+ index);
 
-        var deviceid1;
-        var deviceid2;
-        deviceid1 = result[index-1].deviceid1;
-        deviceid2 = result[index-1].deviceid2;
+        //for( kk in result) {
+          //console.log(" ####### JSON loop ######## "+kk);
+        //}
+        //for( result in results) {
+            var index = Math.floor((Math.random()*result.length)+1);
+            console.log(" ####### SUCESS index ######## "+ index);
 
-        var contactsid = result[index-1].contactsid;
-        console.log(" ####### SUCESS deviceid2 ######## "+ deviceid2);
+            var deviceid1;
+            var deviceid2;
+            deviceid1 = result[index-1].deviceid1;
+            deviceid2 = result[index-1].deviceid2;
 
-        findAppsInstalled(deviceid1,deviceid2,function(error1,result1) {
+            var contactsid = result[index-1].contactsid;
+            console.log(" ####### SUCESS deviceid2 ######## "+ deviceid2);
 
-          if( error1) {
-            console.log(" ####### appsInstalled Error ######## "+JSON.stringify(error1));
-          } else {
+            findAppsInstalled(deviceid1,deviceid2,function(error1,result1) {
 
-            var index = Math.floor((Math.random()*result1.length)+1);
-            console.log(" ####### App on Random is  ######## "+ result1[index-1].package+" : "+result1[index-1].name);
-            var appChoosen = result1[index-1];
-            getContact(contactsid, function ( error2,result2) {
-              if( error2 ) {
-                console.log(" ####### getContact Error ######## "+JSON.stringify(error2));
-                callback(error2,null);
-              } else {
-                console.log(" ####### getContact Success ######## "+JSON.stringify(result2));
-                var jsonResponse = [{appinstalled:appChoosen},{contact:result2}];                
-                console.log(" ####### getContact JSON Response ######## "+ JSON.stringify(jsonResponse));
-                callback(null,jsonResponse);
-              }
+                  if( error1) {
+                    console.log(" ####### appsInstalled Error ######## "+JSON.stringify(error1));
+                  } else {
+
+                    if( result1.length > 0 ) {
+                      var index = Math.floor((Math.random()*result1.length)+1);
+                      console.log(" ####### App on Random is  ######## "+ result1[index-1].package+" : "+result1[index-1].name);
+                      var appChoosen = result1[index-1];
+                      getContact(contactsid, function ( error2,result2) {
+                        if( error2 ) {
+                          console.log(" ####### getContact Error ######## "+JSON.stringify(error2));
+                          callback(error2,null);
+                        } else {
+                          var jsonResponse = [{appinstalled:appChoosen},{contact:result2}];                
+                          console.log(" ####### getContact JSON Response ######## "+ JSON.stringify(jsonResponse));
+                          callback(null,jsonResponse);
+                        }
+                      });
+                    }
+                  }
             });
-          }
-        });
+        //}
         
+        } else {
+          callback(null,{});
         }
       }
   });
@@ -252,8 +261,9 @@ getContact = function(contactsid,callback) {
 }
 
 findAppsInstalled = function(deviceid1,deviceid2,callback) {
-      client.query("select * from appsinstalled where deviceid=? and name not in (select name from appsinstalled where deviceid=?);",
-        [deviceid2,deviceid1], 
+        //client.query("select * from appsinstalled where deviceid=? and name not in (select name from appsinstalled where deviceid=?)",        
+        client.query("select * from appsinstalled where deviceid=?",        
+        [deviceid2], 
         function(err, info) {
           // callback function returns last insert id
           if( err) {

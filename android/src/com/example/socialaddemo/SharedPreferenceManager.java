@@ -8,6 +8,8 @@ public class SharedPreferenceManager {
 	public static class PreferenceKeys {
 		public static String IS_DEVICE_CREATED = "is_device_created";
 		public static String IS_ACCOUNT_CREATED = "is_account_created";
+		public static String IS_APPS_SENT = "is_apps_sent";
+		public static String IS_CONTACTS_SENT = "is_contacts_sent";
 		public static String DEVICE_ID = "device_id";
 	}
 

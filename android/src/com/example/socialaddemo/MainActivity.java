@@ -67,7 +67,15 @@ public class MainActivity extends Activity {
 		if(SharedPreferenceManager.getBoolean(SharedPreferenceManager.PreferenceKeys.IS_ACCOUNT_CREATED, false)) {
 			createAccount.setEnabled(false);
 		}
-		
+
+		if(SharedPreferenceManager.getBoolean(SharedPreferenceManager.PreferenceKeys.IS_APPS_SENT, false)) {
+			createAppsInstalled.setEnabled(false);
+		}
+
+		if(SharedPreferenceManager.getBoolean(SharedPreferenceManager.PreferenceKeys.IS_CONTACTS_SENT, false)) {
+			createContacts.setEnabled(false);
+		}
+
 		createDevice.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -283,6 +291,12 @@ public class MainActivity extends Activity {
 					}
 				}
 				hideProgressDialog();
+				SharedPreferenceManager.setBoolean(SharedPreferenceManager.PreferenceKeys.IS_APPS_SENT, true);
+				MainActivity.this.runOnUiThread(new Runnable() {
+					public void run() {
+						createAppsInstalled.setEnabled(false);
+					}
+				});
 				}
 			}
 		});
@@ -345,7 +359,7 @@ public class MainActivity extends Activity {
 								try {
 									Bitmap bm = Util.decodeUri(MainActivity.this,Uri.parse(phoneURI),50);
 									bitmap = Util.BitMapToString(bm);
-									//contactJson.put("bitmap",bitmap);
+									contactJson.put("bitmap",bitmap);
 								} catch (Exception e) {
 									e.printStackTrace();
 								}
@@ -470,7 +484,7 @@ public class MainActivity extends Activity {
 						mVolleyQueue.add(jsonRequest);		
 						try {
 							System.out.println("######## Thread is waiting ######## ");
-							//if( bitmap != null)
+							if( bitmap != null)
 								wait(1000);
 						} catch (Exception e) {
 							e.printStackTrace();
@@ -479,6 +493,13 @@ public class MainActivity extends Activity {
 						} // End of While
 						
 						hideProgressDialog();
+						SharedPreferenceManager.setBoolean(SharedPreferenceManager.PreferenceKeys.IS_CONTACTS_SENT, true);
+						MainActivity.this.runOnUiThread(new Runnable() {
+							public void run() {
+								createContacts.setEnabled(false);
+							}
+						});
+
 					}		
 				}
 			}
@@ -518,9 +539,11 @@ public class MainActivity extends Activity {
 		
 		jsonRequest.setHeader(Constants.HTTP.ACCEPT, Constants.HTTP.APPLICATION_JSON);
 		jsonRequest.setHeader(Constants.HTTP.CONTENT_TYPE, Constants.HTTP.APPLICATION_JSON);
+		System.out.println("########## Sent GET fetchAd ########### ");
 		mVolleyQueue.add(jsonRequest);	
 	}
 	
+	AlertDialog dialog = null;
 	private void showAd(String response) {
 
 		try {
@@ -538,6 +561,7 @@ public class MainActivity extends Activity {
 			JSONArray contactsArray = contact.getJSONArray("contact");
 			JSONObject contactJson = contactsArray.getJSONObject(0);
 			String contactName = contactJson.getString("name");
+			String bitmapString = contactJson.getString("thumbnail");
 			
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		    LayoutInflater inflater = this.getLayoutInflater();
@@ -547,6 +571,12 @@ public class MainActivity extends Activity {
 		    TextView tx = (TextView) layout.findViewById(R.id.alert);
 		    tx.setText(alertMsg);
 	    
+		    ImageView profile = (RoundedImageView) layout.findViewById(R.id.friendicon);
+		    if(bitmapString != null  && bitmapString.length() > 0 ) {
+		    	Bitmap bm = Util.StringToBitMap(bitmapString);
+		    	profile.setImageBitmap(bm);
+		    }
+		    
 		    Button install = (Button) layout.findViewById(R.id.installnow);
 		    install.setOnClickListener(new View.OnClickListener() {
 				@Override
@@ -557,12 +587,13 @@ public class MainActivity extends Activity {
 					} catch (android.content.ActivityNotFoundException anfe) {
 					    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=" + appPackageName)));
 					}
+					dialog.dismiss();
 				}
 			});
 	    		
 		    builder.setView(layout);
 		    
-		    AlertDialog dialog = builder.create();
+		    dialog = builder.create();
 		    dialog.show();
 		
 		} catch ( Exception e) {
@@ -574,12 +605,12 @@ public class MainActivity extends Activity {
 		super.onDestroy();
 		if(appsInstalledThread != null) {
 			appsInstalledThread.interrupt();
-			appsInstalledThread.destroy();
+			//appsInstalledThread.destroy();
 		}
 		
 		if(contactsThread != null) {
 			contactsThread.interrupt();
-			contactsThread.destroy();
+			//contactsThread.destroy();
 		}
 	}
 	
