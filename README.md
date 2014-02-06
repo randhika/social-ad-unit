@@ -3,19 +3,20 @@ social-ad-unit
 
 Proof of concept for Social Ad Unit
 
-
+Uses Node.js for the server. 
 
 ![alt text](https://raw2.github.com/smanikandan14/social-ad-unit/master/Snapshot1.png "")
 
 
 ![alt text](https://raw2.github.com/smanikandan14/social-ad-unit/master/Snapshot2.png "")
 
-Tables Created:
-1- device
-2- accounts
-3- appsinstalled
-4- contacts
-5- relationship
+| Tables Created |
+|--------------|
+| device |
+| accounts |
+| appsinstalled |
+| contacts |
+| relationship |
 
 REST Apis:
 
