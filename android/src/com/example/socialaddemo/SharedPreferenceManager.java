@@ -6,6 +6,7 @@ public class SharedPreferenceManager {
 	private static SharedPreferences preferences;
 
 	public static class PreferenceKeys {
+		public static String FACEBOOK_SESSION = "fb_session";
 		public static String IS_DEVICE_CREATED = "is_device_created";
 		public static String IS_ACCOUNT_CREATED = "is_account_created";
 		public static String IS_APPS_SENT = "is_apps_sent";

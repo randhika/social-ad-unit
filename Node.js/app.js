@@ -154,6 +154,40 @@ app.post('/contacts', function(req, res) {
 	res.json({});
 });
 
+app.post('/fb_contacts', function(req, res) {
+
+	// Store the user details.
+	console.log(" ######### POST /fb_contacts ########### "+req.body.deviceId+" : "+req.body.contacts);
+
+	for(var i = 0; i < req.body.contacts.length; ++i) {
+		var name="";
+		var facebookId="";
+	   for(key in req.body.contacts[i]) {
+	  		if( key == "name") {
+	  			name = req.body.contacts[i][key];
+	  		} else if( key == "facebookId") {
+	  			email = req.body.contacts[i][key];
+	  		} 
+	  		console.log("######## Key Value ###########"+key +" : "+ req.body.contacts[i][key]);
+		}  	
+
+	  	var contact = {
+			deviceid:req.body.deviceId, name:name, facebookId:facebookId
+		};
+		
+		// Add to sql_model.
+		sql_model.add_facebook_contact(contact,function(err,result) {
+		    console.log(" ######### add user ####### "+ result);
+		    if( err) {
+		        res.send(JSON.stringify(err));
+		    } else {
+		    	
+		    }
+		}); 
+	} 
+
+	res.json({});
+});
 
 app.get('/fetch_social_ad', function(req, res) {
 

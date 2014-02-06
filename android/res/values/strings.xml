@@ -4,6 +4,7 @@
     <string name="app_name">SocialAdDemo</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
+    <string name="applicationId">230841076978962</string>
 	<string name="social_ad_alert">Your contact <b><i>%1$s</i></b> have <b><i>%2$s</i></b> app which you dont have. Would you like to try it for free ?</string>
 
 </resources>

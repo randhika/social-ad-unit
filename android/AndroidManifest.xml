@@ -22,12 +22,23 @@
         <activity
             android:name="com.example.socialaddemo.MainActivity"
             android:label="@string/app_name"
+            android:theme="@style/Theme.AppCompat.Light.DarkActionBar" 
             android:screenOrientation="portrait" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        
+        <activity
+            android:name="com.facebook.LoginActivity"
+            android:label="@string/app_name"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+        <meta-data
+            android:name="com.facebook.sdk.ApplicationId"
+            android:value="@string/applicationId" />
+        
     </application>
 
 </manifest>

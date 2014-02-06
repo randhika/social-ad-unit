@@ -1,12 +1,20 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#00000000">
+    
+<RelativeLayout 
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginTop="20dp"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin">
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:background="#CACACA">
 
 	<com.example.socialaddemo.RoundedImageView 
         android:id="@+id/friendicon"
@@ -25,7 +33,7 @@
         android:layout_marginTop="10dp"
         android:layout_below="@id/friendicon"
         android:layout_centerHorizontal="true"
-        android:textAppearance="?android:attr/textAppearanceMedium"/>
+        android:textAppearance="?android:attr/textAppearanceSmall"/>
 
     <Button
         android:id="@+id/installnow"
@@ -36,6 +44,13 @@
         android:layout_below="@id/alert"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="Install Now" />
+</RelativeLayout>
     
+    <ImageView  
+        android:id="@+id/close"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_gravity="top|right"
+        android:background="@drawable/close"/>
+</FrameLayout>    
     
-</RelativeLayout>    

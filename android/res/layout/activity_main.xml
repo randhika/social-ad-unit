@@ -8,66 +8,10 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".MainActivity" >
 
-    <TextView
-        android:id="@+id/text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:text="Social_Ad Unit Demo" />
-
-
-    <Button
-        android:id="@+id/createDevice"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/text"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="10dp"
-        android:text="Create Device" />
-    
-    <Button
-        android:id="@+id/createAccount"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="10dp"
-        android:layout_below="@id/createDevice"
-        android:text="Send account" />
-    
-    <Button
-        android:id="@+id/createAppsinstalled"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="10dp"
-        android:layout_below="@id/createAccount"
-        android:text="Send Apps Installed" />
-    
-    <Button
-        android:id="@+id/createContacts"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="10dp"
-        android:layout_below="@id/createAppsinstalled"
-        android:text="Send Contacts" />  
-        
-    <Button
-        android:id="@+id/fetchAd"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="10dp"
-        android:layout_below="@id/createContacts"
-        android:text="Fetch Social Ad" />
-    
-    <Button
-        android:id="@+id/fetchAd1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="10dp"
-        android:layout_below="@id/fetchAd"
-        android:text="Fetch Social Ad1" />     
+    <android.support.v4.view.ViewPager
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/pager"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" />
     
 </RelativeLayout>

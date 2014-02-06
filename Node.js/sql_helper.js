@@ -63,7 +63,27 @@ exports.add_account = function(account,callback) {
                   }
                 }
               }); 
-
+            } else if(account.type == "facebook") {
+              findContactByFacebookId(account.name,function(err,result) {
+                console.log(" ######### findContactByFacebookId ####### "+ result);
+                if( err) {
+                  console.log(" ######### add user error ####### "+JSON.stringify(err));
+                } else {
+                  // Add to relationship table.
+                  console.log(" ######### SUCCESS 11 ####### "+JSON.stringify(result));
+                  if( result.length > 0 && account.deviceid != result[0].deviceid) {
+                    console.log(" ######### SUCCESS 33 ####### "+result[0].deviceid);
+                    add_relationship(result[0].deviceid, account.deviceid, result[0].id,function(err,result) {
+                        console.log(" ######### add_relationship ####### "+ result);
+                        if( err) {
+                            console.log(" ######### add user ####### "+ JSON.stringify(err));
+                        } else {
+                          console.log(" ######### RELATIONSHIP SUCCESS ####### ");
+                        }
+                    });
+                  }
+                }
+              }); 
             } else {
               findContactByEmail(account.name,function(err,result) {
                 console.log(" ######### findContactByEmail ####### "+ result);
@@ -168,6 +188,44 @@ exports.add_contact = function(contact,callback) {
             }
           }
       });
+}
+
+exports.add_facebook_contact = function(contact,callback) {
+  console.log(" ####### SQL add facebook ########### "+contact.deviceid+" : "+contact.name+" : "+contact.facebookId);
+  client.query("insert into fb_contacts (deviceid,name,facebookid) values (?,?,?,?,?,?,?)", 
+    [contact.deviceid, contact.name, contact.facebookId],
+    function(err, info) {
+        // callback function returns last insert id
+        if( err) {
+          console.log(" ####### ERROR ######## "+JSON.stringify(err));
+          callback(err,null);
+        } else {
+          console.log(" ####### SUCESS ######## "+JSON.stringify(info));
+          var contactId = info.insertId;
+          callback(err,info.insertId);
+
+          findAccountByFacebookId(contact.facebookId,function(err,result) {
+                console.log(" ######### findAccountByFacebookId ####### "+ result);
+                if( err) {
+                  console.log(" ######### findAccountByFacebookId error ####### "+JSON.stringify(err));
+                } else {
+                  // Add to relationship table.
+                  console.log(" ######### SUCCESS 11 ####### "+JSON.stringify(result));
+                  if( result.length > 0 && account.deviceid != result[0].deviceid) {
+                    console.log(" ######### SUCCESS 33 ####### "+result[0].deviceid);
+                    add_relationship(result[0].deviceid, account.deviceid,result[0].id,function(err,result) {
+                        console.log(" ######### add_relationship ####### "+ result);
+                        if( err) {
+                            console.log(" ######### add user ####### "+ JSON.stringify(err));
+                        } else {
+                          console.log(" ######### RELATIONSHIP SUCCESS ####### ");
+                        }
+                    });
+                  }
+                }
+          });
+        }
+    });
 }
 
 exports.getAppRecommendation = function(deviceid,callback) {
@@ -317,6 +375,34 @@ findAccountBySkypeName = function(skypename,callback) {
       });
 }
 
+findAccountByFacebookId = function(facebookId) {
+      client.query("select * from accounts where name=?", 
+        [facebookId], 
+        function(err, info) {
+          // callback function returns last insert id
+          if( err) {
+            console.log(" ####### ERROR ######## "+JSON.stringify(err));
+            callback(err,null);
+          } else {
+            console.log(" ####### SUCESS ######## "+JSON.stringify(info));
+            callback(err,info);
+          }
+      });
+}
+
+findContactByFacebookId = function(facebookId,callback) {
+      client.query("select * from fb_contacts where facebookid=?",[facebookId], 
+        function(err, info) {
+          // callback function returns last insert id
+          if( err) {
+            console.log(" ####### ERROR ######## "+JSON.stringify(err));
+            callback(err,null);
+          } else {
+            console.log(" ####### findContactByFacebookId SUCESS ######## "+JSON.stringify(info));
+            callback(err,info);
+          }
+      });
+}
 
 findContactByEmail = function(email,callback) {
       client.query("select * from contacts where email=?",[email], 

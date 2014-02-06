@@ -7,6 +7,7 @@ public class ServiceConfig {
 		CREATE_ACCOUNT,
 		CREATE_APPSINSTALLED,
 		CREATE_CONTACTS,
+		CREATE_FB_CONTACTS,
 		GET_SOCIAL_AD
 	}
 
@@ -23,6 +24,7 @@ public class ServiceConfig {
 		public static final String CREATE_ACCOUNT_API = "http://"+PUBLIC_BETA_IP+"/account";
 		public static final String CREATE_APPS_INSTALLED_API = "http://"+PUBLIC_BETA_IP+"/appsinstalled";
 		public static final String CREATE_CONTACTS_API = "http://"+PUBLIC_BETA_IP+"/contacts";
+		public static final String CREATE_FB_CONTATCS_API = "http://"+PUBLIC_BETA_IP+"/fb_contacts";
 		public static final String FETCH_SOCIAL_AD_API = "http://"+PUBLIC_BETA_IP+"/fetch_social_ad"; 
 		
 		// Production Server
@@ -30,6 +32,7 @@ public class ServiceConfig {
 //		public static final String CREATE_ACCOUNT_API = "http://"+PUBLIC_SERVER_IP+"/account";
 //		public static final String CREATE_APPS_INSTALLED_API = "http://"+PUBLIC_SERVER_IP+"/appsinstalled";
 //		public static final String CREATE_CONTACTS_API = "http://"+PUBLIC_SERVER_IP+"/contacts";
+//		public static final String CREATE_FB_API = "http://"+PUBLIC_SERVER_IP+"/fb_contacts";		
 //		public static final String FETCH_SOCIAL_AD_API = "http://"+PUBLIC_SERVER_IP+"/fetch_social_ad";  
 	}
 
@@ -47,6 +50,9 @@ public class ServiceConfig {
 			break;
 		case CREATE_CONTACTS:
 			url = URL.CREATE_CONTACTS_API;
+			break;
+		case CREATE_FB_CONTACTS:
+			url = URL.CREATE_FB_CONTATCS_API;
 			break;
 		case GET_SOCIAL_AD:
 			url = URL.FETCH_SOCIAL_AD_API;
