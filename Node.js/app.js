@@ -166,7 +166,7 @@ app.post('/fb_contacts', function(req, res) {
 	  		if( key == "name") {
 	  			name = req.body.contacts[i][key];
 	  		} else if( key == "facebookId") {
-	  			email = req.body.contacts[i][key];
+	  			facebookId = req.body.contacts[i][key];
 	  		} 
 	  		console.log("######## Key Value ###########"+key +" : "+ req.body.contacts[i][key]);
 		}  	

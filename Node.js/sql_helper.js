@@ -192,7 +192,7 @@ exports.add_contact = function(contact,callback) {
 
 exports.add_facebook_contact = function(contact,callback) {
   console.log(" ####### SQL add facebook ########### "+contact.deviceid+" : "+contact.name+" : "+contact.facebookId);
-  client.query("insert into fb_contacts (deviceid,name,facebookid) values (?,?,?,?,?,?,?)", 
+  client.query("insert into fb_contacts (deviceid,name,facebookid) values (?,?,?)", 
     [contact.deviceid, contact.name, contact.facebookId],
     function(err, info) {
         // callback function returns last insert id
@@ -375,7 +375,7 @@ findAccountBySkypeName = function(skypename,callback) {
       });
 }
 
-findAccountByFacebookId = function(facebookId) {
+findAccountByFacebookId = function(facebookId,callback) {
       client.query("select * from accounts where name=?", 
         [facebookId], 
         function(err, info) {

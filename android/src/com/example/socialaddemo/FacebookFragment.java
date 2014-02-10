@@ -41,8 +41,13 @@ import com.android.volley.VolleyError;
 import com.example.socialaddemo.ServiceConfig.SERVICES;
 import com.facebook.FacebookAuthorizationException;
 import com.facebook.FacebookOperationCanceledException;
+import com.facebook.LoggingBehavior;
 import com.facebook.Session;
 import com.facebook.SessionState;
+import com.facebook.Settings;
+import com.facebook.UiLifecycleHelper;
+import com.facebook.model.GraphUser;
+import com.facebook.widget.LoginButton;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -64,9 +69,7 @@ public class FacebookFragment extends Fragment {
 	private Session.StatusCallback statusCallback = new SessionStatusCallback();
 	public static final List<String> READ_PERMISSIONS = Arrays.asList(
 			"read_friendlists",
-			"email",
-			"read_stream",
-			"user_location" );
+			"read_stream" );
 
 	private class SessionStatusCallback implements Session.StatusCallback {
 		@Override
@@ -84,12 +87,12 @@ public class FacebookFragment extends Fragment {
 				}).show();
 			} else if (state == SessionState.OPENED_TOKEN_UPDATED) {
 				System.out.println("###### AthenticationActivity SessionStatusCallback OPENED_TOKEN_UPDATED ####### ");
-				SharedPreferenceManager.setString(SharedPreferenceManager.PreferenceKeys.FACEBOOK_SESSION, session.toString());
-				updateButtonStatus();
+				//SharedPreferenceManager.setString(SharedPreferenceManager.PreferenceKeys.FACEBOOK_SESSION, session.toString());
+				getUserId();
 			} else if (state == SessionState.OPENED) {
 				System.out.println("###### AthenticationActivity SessionStatusCallback OPENED ####### "+session);
-				SharedPreferenceManager.setString(SharedPreferenceManager.PreferenceKeys.FACEBOOK_SESSION, session.toString());
-				updateButtonStatus();
+				//SharedPreferenceManager.setString(SharedPreferenceManager.PreferenceKeys.FACEBOOK_SESSION, session.toString());
+				getUserId();
 			}
 		}
 	}
@@ -99,6 +102,7 @@ public class FacebookFragment extends Fragment {
 		super.onCreate(savedInstanceState); 
 		this.setHasOptionsMenu(true);
 		
+        Settings.addLoggingBehavior(LoggingBehavior.INCLUDE_ACCESS_TOKENS);
 		Session session = Session.getActiveSession();
 		System.out.println("###### Authentication activity ####### "+ session);
 		if (session == null) {
@@ -110,44 +114,102 @@ public class FacebookFragment extends Fragment {
 			}
 			System.out.println("###### Authentication activity ####### "+ session.toString());
 			Session.setActiveSession(session);
-		}
+			
+            if (session.getState().equals(SessionState.CREATED_TOKEN_LOADED)) {
+                session.openForRead(new Session.OpenRequest(this).setCallback(statusCallback));
+            }
 
+		} 
 	}
 	
+    @Override
+    public void onStart() {
+        super.onStart();
+        Session.getActiveSession().addCallback(statusCallback);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        Session.getActiveSession().removeCallback(statusCallback);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Session.getActiveSession().onActivityResult(getActivity(), requestCode, resultCode, data);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        Session session = Session.getActiveSession();
+        Session.saveSession(session, outState);
+    }
+
+	public void getUserId() {
+		com.facebook.Request request = com.facebook.Request.newMeRequest(Session.getActiveSession(), 
+			new com.facebook.Request.GraphUserCallback() {
+				@Override
+				public void onCompleted(GraphUser user, com.facebook.Response response) {
+					// TODO Auto-generated method stub
+	                // If the response is successful
+	                if (Session.getActiveSession() != null) {
+	                    if (user != null) {
+	                        String user_ID = user.getId();//user id
+	                        String profileName = user.getName();//user's profile name
+	                        SharedPreferenceManager.setString(SharedPreferenceManager.PreferenceKeys.FACEBOOK_ID, user.getId());
+	                        System.out.println("######## User Id, profile name ######### "+ user_ID+" : "+profileName);
+	                        updateButtonStatus();
+	                    }   
+	                }   
+				}
+			}); 	
+		com.facebook.Request.executeBatchAsync(request);
+	}
+		
 	private void updateButtonStatus() {
-		String fbSession = SharedPreferenceManager.getString(SharedPreferenceManager.PreferenceKeys.FACEBOOK_SESSION, null);
-		if(fbSession == null || SharedPreferenceManager.getBoolean(SharedPreferenceManager.PreferenceKeys.IS_DEVICE_CREATED, false)) {
+		String fbSession = SharedPreferenceManager.getString(SharedPreferenceManager.PreferenceKeys.FACEBOOK_ID, null);
+		System.out.println("########## updateButtonStatus fbSession ######### "+fbSession);
+		if( fbSession == null) {
+			fbLogin.setEnabled(true);
+		} else {
+			fbLogin.setEnabled(false);
+		}
+		
+		if(fbSession == null || SharedPreferenceManager.getBoolean(SharedPreferenceManager.PreferenceKeys.IS_DEVICE_CREATED1, false)) {
 			createDevice.setEnabled(false);
 		} else {
 			createDevice.setEnabled(true);
 		}
 
-		if(fbSession == null || SharedPreferenceManager.getBoolean(SharedPreferenceManager.PreferenceKeys.IS_ACCOUNT_CREATED, false)) {
+		if(fbSession == null || SharedPreferenceManager.getBoolean(SharedPreferenceManager.PreferenceKeys.IS_ACCOUNT_CREATED1, false)) {
 			createAccount.setEnabled(false);
 		} else {
 			createAccount.setEnabled(true);
 		}
 
-		if(fbSession == null || SharedPreferenceManager.getBoolean(SharedPreferenceManager.PreferenceKeys.IS_APPS_SENT, false)) {
+		if(fbSession == null || SharedPreferenceManager.getBoolean(SharedPreferenceManager.PreferenceKeys.IS_APPS_SENT1, false)) {
 			createAppsInstalled.setEnabled(false);
 		} else {
 			createAppsInstalled.setEnabled(true);
 		}
 
-		if(fbSession == null || SharedPreferenceManager.getBoolean(SharedPreferenceManager.PreferenceKeys.IS_CONTACTS_SENT, false)) {
+		if(fbSession == null || SharedPreferenceManager.getBoolean(SharedPreferenceManager.PreferenceKeys.IS_CONTACTS_SENT1, false)) {
 			createContacts.setEnabled(false);
 		} else {
 			createContacts.setEnabled(true);
 		}
 		
 	}
+	
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
         Bundle savedInstanceState) {
     
         View v = inflater.inflate(R.layout.fragment_facebook_layout, null);
         textView = (TextView) v.findViewById(R.id.text);
-        fbLogin = (Button) v.findViewById(R.id.fblogin);
+        fbLogin = (Button) v.findViewById(R.id.login_button);
 		createDevice = (Button) v.findViewById(R.id.createDevice);
 		createAccount = (Button) v.findViewById(R.id.createAccount);
 		createAppsInstalled = (Button) v.findViewById(R.id.createAppsinstalled);
@@ -168,7 +230,7 @@ public class FacebookFragment extends Fragment {
 					Session.openActiveSession(FacebookFragment.this.getActivity(), true, statusCallback);
 				}				
 			}
-		});
+		}); 
 		
 		createDevice.setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -257,8 +319,8 @@ public class FacebookFragment extends Fragment {
 					JSONObject responseJson = new JSONObject(response.toString());
 					if( responseJson.has("id")) {
 						String deviceId = responseJson.getString("id");
-						SharedPreferenceManager.setString(SharedPreferenceManager.PreferenceKeys.DEVICE_ID, deviceId);
-						SharedPreferenceManager.setBoolean(SharedPreferenceManager.PreferenceKeys.IS_DEVICE_CREATED, true);
+						SharedPreferenceManager.setString(SharedPreferenceManager.PreferenceKeys.DEVICE_ID1, deviceId);
+						SharedPreferenceManager.setBoolean(SharedPreferenceManager.PreferenceKeys.IS_DEVICE_CREATED1, true);
 						createDevice.setEnabled(false);
 					}
 				} catch (Exception e) {
@@ -287,7 +349,21 @@ public class FacebookFragment extends Fragment {
 		showProgressDialog();
 		String url = ServiceConfig.getURL(SERVICES.CREATE_ACCOUNT);
 
-		JSONObject postBody = Util.getAccounts(mContext);
+		JSONObject postBody = new JSONObject();
+		JSONArray accountsArray = new JSONArray();
+		JSONObject accountJson = new JSONObject();
+		String fbId = SharedPreferenceManager.getString(SharedPreferenceManager.PreferenceKeys.FACEBOOK_ID, null);
+		try {
+			accountJson.put("name", fbId);
+			accountJson.put("type", "facebook");
+			String deviceId = SharedPreferenceManager.getString(SharedPreferenceManager.PreferenceKeys.DEVICE_ID1, "");
+			accountsArray.put(accountJson);
+			postBody.put("deviceId",deviceId);
+			postBody.put("accounts",accountsArray);
+		} catch (Exception e ) {
+			e.printStackTrace();
+		}
+
 		System.out.println("######## CreateDevice account body ######## "+postBody.toString());
 		
 		MyJsonRequest jsonRequest = new MyJsonRequest(Request.Method.POST, 
@@ -297,7 +373,7 @@ public class FacebookFragment extends Fragment {
 			@Override
 			public void onResponse(JSONObject response) {
 				System.out.println("######## createDevice SUCCESS ######### "+response.toString());
-				SharedPreferenceManager.setBoolean(SharedPreferenceManager.PreferenceKeys.IS_ACCOUNT_CREATED, true);
+				SharedPreferenceManager.setBoolean(SharedPreferenceManager.PreferenceKeys.IS_ACCOUNT_CREATED1, true);
 				createAccount.setEnabled(false);
 				hideProgressDialog();
 				showMessage("Account Successfully Created ",false);
@@ -351,7 +427,7 @@ public class FacebookFragment extends Fragment {
 						
 						JSONObject reqBody = new JSONObject();
 						try {
-							String deviceId = SharedPreferenceManager.getString(SharedPreferenceManager.PreferenceKeys.DEVICE_ID, "");
+							String deviceId = SharedPreferenceManager.getString(SharedPreferenceManager.PreferenceKeys.DEVICE_ID1, "");
 							reqBody.put("deviceId",deviceId);
 							reqBody.put("installed",installedArray);
 						} catch (Exception e ) {
@@ -394,7 +470,7 @@ public class FacebookFragment extends Fragment {
 					}
 				}
 				hideProgressDialog();
-				SharedPreferenceManager.setBoolean(SharedPreferenceManager.PreferenceKeys.IS_APPS_SENT, true);
+				SharedPreferenceManager.setBoolean(SharedPreferenceManager.PreferenceKeys.IS_APPS_SENT1, true);
 				FacebookFragment.this.getActivity().runOnUiThread(new Runnable() {
 					public void run() {
 						createAppsInstalled.setEnabled(false);
@@ -418,11 +494,11 @@ public class FacebookFragment extends Fragment {
 		params.putString("q", fqlQuery);
 		Session session = Session.getActiveSession();
 
-		if( session == null || !session.isOpened()) {
+/*		if( session == null || !session.isOpened()) {
 			showMessage("Please login", true);
 			hideProgressDialog();
 			return;
-		}
+		} */
 
 		com.facebook.Request request = new com.facebook.Request(session,
 				"/fql",
@@ -446,9 +522,9 @@ public class FacebookFragment extends Fragment {
 							Type collectionType = new TypeToken<Collection<FbFriend>>(){}.getType();
 							Collection<FbFriend> friends = gson.fromJson(reader, collectionType);
 
-//							for(FbFriend friend: friends) {
-//								System.out.println("######## FBFriend is ######### "+friend.getUid()+" : " +friend.getName());
-//							}
+							for(FbFriend friend: friends) {
+								System.out.println("######## FBFriend is ######### "+friend.getUid()+" : " +friend.getName());
+							}
 							sendFBContacts(friends);
 							hideProgressDialog();
 						} catch (Exception e) {
@@ -472,16 +548,18 @@ public class FacebookFragment extends Fragment {
 			for(FbFriend friend : friends ) {
 				JSONObject contactJson = new JSONObject();
 				contactJson.put("name", friend.getName());
-				contactJson.put("facebookid", friend.getUid());
+				contactJson.put("facebookId", friend.getUid());
 				contactsArray.put(contactJson);
 			}
 			
-			String deviceId = SharedPreferenceManager.getString(SharedPreferenceManager.PreferenceKeys.DEVICE_ID, "");
+			String deviceId = SharedPreferenceManager.getString(SharedPreferenceManager.PreferenceKeys.DEVICE_ID1, "");
 			reqBody.put("deviceId",deviceId);
 			reqBody.put("contacts",contactsArray);
 		} catch (Exception e ) {
 			e.printStackTrace();
 		}
+		
+		System.out.println("######## Request post body ########## "+reqBody);
 		
 		String url = ServiceConfig.getURL(SERVICES.CREATE_FB_CONTACTS);
 		//System.out.println("######## CreateDevice appsInstalled ######## "+reqBody.toString());
@@ -512,13 +590,13 @@ public class FacebookFragment extends Fragment {
 		mVolleyQueue.add(jsonRequest);	
 		
 		hideProgressDialog();
-		SharedPreferenceManager.setBoolean(SharedPreferenceManager.PreferenceKeys.IS_CONTACTS_SENT, true);
+		SharedPreferenceManager.setBoolean(SharedPreferenceManager.PreferenceKeys.IS_CONTACTS_SENT1, true);
 		createContacts.setEnabled(false);		
 	}
 	
 	private void fetchAd(final boolean showAd1) {
 		
-		String deviceId = SharedPreferenceManager.getString(SharedPreferenceManager.PreferenceKeys.DEVICE_ID, "");
+		String deviceId = SharedPreferenceManager.getString(SharedPreferenceManager.PreferenceKeys.DEVICE_ID1, "");
 		if( deviceId.length() == 0) {
 			showMessage("Invalid Deviceid found",false);
 			return;
