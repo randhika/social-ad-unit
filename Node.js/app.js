@@ -207,3 +207,22 @@ app.get('/fetch_social_ad', function(req, res) {
 	});
 	
 });
+
+app.get('/fetch_fb_social_ad', function(req, res) {
+
+	var queryData = url.parse(req.url, true).query;
+
+	if (queryData.deviceId) {
+		console.log(" ######### GET /fetch_fb_social_ad ########### "+queryData.deviceId);
+	}
+	
+	sql_model.getFBAppRecommendation(queryData.deviceId,function(err,result) {
+	    console.log(" ######### getAppRecommendation ####### "+ result);
+	    if( err) {
+	        res.send(JSON.stringify(err));
+	    } else {
+			res.json(result);    	
+	    }		
+	});
+	
+});

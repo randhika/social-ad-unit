@@ -38,6 +38,7 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.ImageLoader;
 import com.example.socialaddemo.ServiceConfig.SERVICES;
 import com.facebook.FacebookAuthorizationException;
 import com.facebook.FacebookOperationCanceledException;
@@ -63,6 +64,7 @@ public class FacebookFragment extends Fragment {
 	Button fetchAd;
 	Button fetchAd1;
 	RequestQueue mVolleyQueue;
+	
 	ProgressDialog mProgressDialog;
 	Context mContext;
 	
@@ -278,6 +280,7 @@ public class FacebookFragment extends Fragment {
 		mProgressDialog = new ProgressDialog(mContext);
 		mProgressDialog.setMessage("Please wait");
 		mVolleyQueue = SocialAdDemoVolley.getRequestQueue();
+		
 		//getAccounts();
 		//Util.getAppsInstalled(this);
 		//fetchContacts();
@@ -602,7 +605,7 @@ public class FacebookFragment extends Fragment {
 			return;
 		}
 		
-		String url = ServiceConfig.getURL(SERVICES.GET_SOCIAL_AD)+"/?deviceId="+deviceId;
+		String url = ServiceConfig.getURL(SERVICES.GET_FB_SOCIAL_AD)+"/?deviceId="+deviceId;
 		
 		MyStringRequest jsonRequest = new MyStringRequest(Request.Method.GET, 
 				url, 
@@ -614,6 +617,36 @@ public class FacebookFragment extends Fragment {
 				//showMessage("Successfully sent Apps Installed",false);
 				try {
 					JSONArray responseArray = new JSONArray(response);
+					if( responseArray.length() == 0 ) {
+						AlertDialog.Builder builder = new AlertDialog.Builder(FacebookFragment.this.getActivity());
+						builder.setTitle("No Ad");
+						 builder
+							.setMessage("No RelationShip Found for this device.")
+							.setCancelable(false)
+							.setPositiveButton("Yes",new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,int id) {
+
+								}
+							});
+							AlertDialog alertDialog = builder.create();
+							alertDialog.show();
+					}
+				} catch (Exception e) {					
+					AlertDialog.Builder builder = new AlertDialog.Builder(FacebookFragment.this.getActivity());
+					builder.setTitle("No Ad");
+					 builder
+					.setMessage("No RelationShip Found for this device.")
+					.setCancelable(false)
+					.setPositiveButton("Yes",new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog,int id) {
+
+						}
+					});
+					AlertDialog alertDialog = builder.create();
+					alertDialog.show();
+				} 
+				
+				try {
 					if( showAd1 ) {
 						showAd1(response);
 					} else {
@@ -651,8 +684,8 @@ public class FacebookFragment extends Fragment {
 		
 			JSONObject contactJson = resultJson.getJSONObject("contact");
 			String contactName = contactJson.getString("name");
-			String contact_id = contactJson.getString("contact_id");
-			String phoneURI = "content://com.android.contacts/contacts/"+contact_id+"/photo";
+			String fbId = contactJson.getString("facebookid");
+			String phoneUrl = "http://graph.facebook.com/"+fbId+"/picture?type=large";
 			
 			AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
 		    LayoutInflater inflater = FacebookFragment.this.getActivity().getLayoutInflater();
@@ -666,10 +699,13 @@ public class FacebookFragment extends Fragment {
 	    
 		    ImageView profile = (RoundedImageView) layout.findViewById(R.id.friendicon);
 		    
-			Bitmap bm = Util.decodeUri(mContext,Uri.parse(phoneURI),50);
-			profile.setImageBitmap(bm);
-			
-		    Button install = (Button) layout.findViewById(R.id.installnow);
+			SocialAdDemoVolley.getImageLoader().get(phoneUrl, 
+					ImageLoader.getImageListener(profile, 
+							R.drawable.close, 
+							//TODO Replace any error image.
+							R.drawable.close));
+
+			ImageView install = (ImageView) layout.findViewById(R.id.installnow);
 		    install.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
@@ -710,11 +746,11 @@ public class FacebookFragment extends Fragment {
 			String contactName1 = null;
 			String contactName2 = null;
 			
-			String phoneURI1 = null;
-			String phoneURI2 = null;
+			String phoneURl1 = null;
+			String phoneURl2 = null;
 			
-			String contact_id1 = null;
-			String contact_id2 = null;
+			String fbId1 = null;
+			String fbId2 = null;
 			
 			JSONObject resultJson = (JSONObject) responseArray.get(0);
 			
@@ -724,8 +760,9 @@ public class FacebookFragment extends Fragment {
 		
 			JSONObject contactJson = resultJson.getJSONObject("contact");
 			contactName1 = contactJson.getString("name");
-			contact_id1 = contactJson.getString("contact_id");
-			phoneURI1 = "content://com.android.contacts/contacts/"+contact_id1+"/photo";
+			fbId1 = contactJson.getString("facebookid");
+			phoneURl1 = "http://graph.facebook.com/"+fbId1+"/picture?type=large";
+
 
 			resultJson = (JSONObject) responseArray.get(1);
 			
@@ -735,8 +772,8 @@ public class FacebookFragment extends Fragment {
 			
 			contactJson = resultJson.getJSONObject("contact");
 			contactName2 = contactJson.getString("name");
-			contact_id2 = contactJson.getString("contact_id");
-			phoneURI2 = "content://com.android.contacts/contacts/"+contact_id2+"/photo";
+			fbId2 = contactJson.getString("facebookid");
+			phoneURl2 = "http://graph.facebook.com/"+fbId2+"/picture?type=large";
 
 			AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
 		    LayoutInflater inflater = FacebookFragment.this.getActivity().getLayoutInflater();
@@ -750,10 +787,13 @@ public class FacebookFragment extends Fragment {
 		    tx.setTypeface(FontProvider.getHelveticaLightFont(mContext));
 		    
 		    ImageView profile = (ImageView) layout.findViewById(R.id.friendicon);
-			Bitmap bm = Util.decodeUri(mContext,Uri.parse(phoneURI1),50);
-			profile.setImageBitmap(bm);
+			SocialAdDemoVolley.getImageLoader().get(phoneURl1, 
+					ImageLoader.getImageListener(profile, 
+							R.drawable.close, 
+							//TODO Replace any error image.
+							R.drawable.close));
 			
-		    Button install = (Button) layout.findViewById(R.id.installnow);
+		    ImageView install = (ImageView) layout.findViewById(R.id.installnow);
 		    install.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
@@ -773,10 +813,13 @@ public class FacebookFragment extends Fragment {
 		    tx1.setTypeface(FontProvider.getHelveticaLightFont(mContext));
 		    
 		    ImageView profile1 = (ImageView) layout.findViewById(R.id.friendicon1);
-			bm = Util.decodeUri(mContext,Uri.parse(phoneURI2),50);
-			profile1.setImageBitmap(bm);
+			SocialAdDemoVolley.getImageLoader().get(phoneURl2, 
+					ImageLoader.getImageListener(profile1, 
+							R.drawable.close, 
+							//TODO Replace any error image.
+							R.drawable.close));
 			
-		    install = (Button) layout.findViewById(R.id.installnow1);
+		    install = (ImageView) layout.findViewById(R.id.installnow1);
 		    install.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {

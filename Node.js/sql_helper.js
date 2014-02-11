@@ -211,9 +211,9 @@ exports.add_facebook_contact = function(contact,callback) {
                 } else {
                   // Add to relationship table.
                   console.log(" ######### SUCCESS 11 ####### "+JSON.stringify(result));
-                  if( result.length > 0 && account.deviceid != result[0].deviceid) {
+                  if( result.length > 0 && contact.deviceid != result[0].deviceid) {
                     console.log(" ######### SUCCESS 33 ####### "+result[0].deviceid);
-                    add_relationship(result[0].deviceid, account.deviceid,result[0].id,function(err,result) {
+                    add_relationship(contact.deviceid,result[0].deviceid,contactId,function(err,result) {
                         console.log(" ######### add_relationship ####### "+ result);
                         if( err) {
                             console.log(" ######### add user ####### "+ JSON.stringify(err));
@@ -281,7 +281,61 @@ exports.getAppRecommendation = function(deviceid,callback) {
         }
       }
   });
+}
 
+exports.getFBAppRecommendation = function(deviceid,callback) {
+  console.log(" ####### getFBAppRecommendation ######## "+ deviceid);
+  //client.query("select * from relationship where deviceid1=?",[deviceid],
+  client.query("select r.id,r.deviceid1,r.deviceid2,r.contactsid,c.name,c.facebookid from relationship r join fb_contacts c on c.id=r.contactsid where r.deviceid1=?",
+    [deviceid],
+  function(error, result) {
+      if( error) {
+        console.log(" ####### ERROR ######## "+JSON.stringify(error));
+        callback(error,null);
+      } else {
+        console.log(" ####### SUCESS ######## "+JSON.stringify(result));
+        console.log(" ####### SUCESS ######## "+result.length);
+
+        var length = result.length;
+        var count = 0;
+        var jsonOutput=[];
+
+        if( result.length > 0) {
+
+          for(var i = 0; i < result.length; ++i) {
+
+            var deviceid1;
+            var deviceid2;
+            deviceid1 = result[i].deviceid1;
+            deviceid2 = result[i].deviceid2;
+
+            var contactjson = result[i];
+            var contactsid = result[i].contactsid;
+            console.log(" ####### SUCESS deviceid2 ######## "+ deviceid2);
+
+            findAppsInstalled(deviceid1,deviceid2,contactjson,function(error1,result1,contactjsonCB) {
+
+                  count++;
+                  if( error1) {
+                    console.log(" ####### appsInstalled Error ######## "+JSON.stringify(error1));
+                  } else {
+
+                    if( result1.length > 0 ) {
+                      console.log(" ####### App on Random is  ######## "+ result1[0].package+" : "+result1[0].name);
+                      var appChoosen = result1[0];
+                      jsonOutput.push({appinstalled:appChoosen,contact:contactjsonCB});
+                      console.log(" ####### getContact JSON Response ######## "+ JSON.stringify(jsonOutput));
+                      if( count == result.length)
+                        callback(null,jsonOutput);
+                    }
+                  }
+            });
+          }
+        } else {
+          callback(null,{});
+        }
+      }
+  });
 }
 
 add_relationship = function(deviceid1,deviceid2,contactsid,callback) {
