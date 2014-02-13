@@ -13,6 +13,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -21,10 +22,14 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.text.Spannable;
+import android.text.style.RelativeSizeSpan;
+import android.text.style.StyleSpan;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -46,9 +51,7 @@ import com.facebook.LoggingBehavior;
 import com.facebook.Session;
 import com.facebook.SessionState;
 import com.facebook.Settings;
-import com.facebook.UiLifecycleHelper;
 import com.facebook.model.GraphUser;
-import com.facebook.widget.LoginButton;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -687,16 +690,37 @@ public class FacebookFragment extends Fragment {
 			String fbId = contactJson.getString("facebookid");
 			String phoneUrl = "http://graph.facebook.com/"+fbId+"/picture?type=large";
 			
-			AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+			Dialog connectionDialog = new Dialog(FacebookFragment.this.getActivity(), R.style.alertdialog);
+            
+            
+            
+			AlertDialog.Builder builder = new AlertDialog.Builder(mContext,R.style.alertdialog);
+
 		    LayoutInflater inflater = FacebookFragment.this.getActivity().getLayoutInflater();
 		    View layout = inflater.inflate(R.layout.social_ad_layout, null);
-		    String messageFormat = getResources().getString(R.string.social_ad_alert);  
+		    String messageFormat = getResources().getString(R.string.social_ad_alert1);  
 		    String alertMsg = String.format(messageFormat, contactName, appName); 
 
 		    TextView tx = (TextView) layout.findViewById(R.id.alert);
-		    tx.setText(alertMsg);
-		    tx.setTypeface(FontProvider.getHelveticaLightFont(mContext));
 	    
+		    Spannable str = Spannable.Factory.getInstance().newSpannable(alertMsg);
+
+		    int nameStart = alertMsg.indexOf(contactName);
+		    int contactLenth = contactName.length();
+		    int appStart = alertMsg.indexOf(appName);
+		    int appLenth = appName.length();
+		    
+			str.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), nameStart, nameStart+contactLenth, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+			str.setSpan(new StyleSpan(android.graphics.Typeface.ITALIC), nameStart, nameStart+contactLenth, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+			str.setSpan(new RelativeSizeSpan(1.2f), nameStart, nameStart+contactLenth,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+			str.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), appStart, appStart+appLenth, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+			str.setSpan(new StyleSpan(android.graphics.Typeface.ITALIC), appStart, appStart+appLenth, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+			str.setSpan(new RelativeSizeSpan(1.2f), appStart, appStart+appLenth,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+		    tx.setText(str);
+		    tx.setTypeface(FontProvider.getHelveticaLightFont(mContext));
+
 		    ImageView profile = (RoundedImageView) layout.findViewById(R.id.friendicon);
 		    
 			SocialAdDemoVolley.getImageLoader().get(phoneUrl, 
@@ -730,7 +754,9 @@ public class FacebookFragment extends Fragment {
 		    builder.setView(layout);
 		    
 		    dialog = builder.create();
-		    dialog.show();
+		    //dialog.show();
+		    connectionDialog.setContentView(layout);
+		    connectionDialog.show();
 		
 		} catch ( Exception e) {
 			e.printStackTrace();
@@ -778,12 +804,27 @@ public class FacebookFragment extends Fragment {
 			AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
 		    LayoutInflater inflater = FacebookFragment.this.getActivity().getLayoutInflater();
 		    View layout = inflater.inflate(R.layout.social_ad_layout1, null);
-		    String messageFormat = getResources().getString(R.string.social_ad_alert);  
+		    String messageFormat = getResources().getString(R.string.social_ad_alert1);  
 		    
 		    String alertMsg1 = String.format(messageFormat, contactName1, appName1); 
 	
 		    TextView tx = (TextView) layout.findViewById(R.id.alert);
-		    tx.setText(alertMsg1);
+		    Spannable str = Spannable.Factory.getInstance().newSpannable(alertMsg1);
+
+		    int nameStart = alertMsg1.indexOf(contactName1);
+		    int contactLenth = contactName1.length();
+		    int appStart = alertMsg1.indexOf(appName1);
+		    int appLenth = appName1.length();
+		    
+			str.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), nameStart, nameStart+contactLenth, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+			str.setSpan(new RelativeSizeSpan(1.2f), nameStart, nameStart+contactLenth,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+			//str.setSpan(new ForegroundColorSpan(0xFFFF0000), nameStart, nameStart+contactLenth, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+			str.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), appStart, appStart+appLenth, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+			str.setSpan(new RelativeSizeSpan(1.2f), appStart, appStart+appLenth,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+			//str.setSpan(new ForegroundColorSpan(0xFFFF0000), appStart, appStart+appLenth, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+		    tx.setText(str);
 		    tx.setTypeface(FontProvider.getHelveticaLightFont(mContext));
 		    
 		    ImageView profile = (ImageView) layout.findViewById(R.id.friendicon);
@@ -809,9 +850,26 @@ public class FacebookFragment extends Fragment {
 		    
 		    TextView tx1 = (TextView) layout.findViewById(R.id.alert1);
 		    String alertMsg2 = String.format(messageFormat, contactName2, appName2); 
-		    tx1.setText(alertMsg2);
-		    tx1.setTypeface(FontProvider.getHelveticaLightFont(mContext));
+
+		    str = Spannable.Factory.getInstance().newSpannable(alertMsg2);
+
+		    nameStart = alertMsg2.indexOf(contactName2);
+		    contactLenth = contactName2.length();
+		    appStart = alertMsg2.indexOf(appName2);
+		    appLenth = appName2.length();
 		    
+			str.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), nameStart, nameStart+contactLenth, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+			str.setSpan(new RelativeSizeSpan(1.2f), nameStart, nameStart+contactLenth,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+			//str.setSpan(new ForegroundColorSpan(0xFFFF0000), nameStart, nameStart+contactLenth, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+			str.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), appStart, appStart+appLenth, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+			str.setSpan(new RelativeSizeSpan(1.2f), appStart, appStart+appLenth,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+			//str.setSpan(new ForegroundColorSpan(0xFFFF0000), appStart, appStart+appLenth, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+		    tx1.setText(str);
+		    tx1.setTypeface(FontProvider.getHelveticaLightFont(mContext));
+
+
 		    ImageView profile1 = (ImageView) layout.findViewById(R.id.friendicon1);
 			SocialAdDemoVolley.getImageLoader().get(phoneURl2, 
 					ImageLoader.getImageListener(profile1, 
