@@ -55,7 +55,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
 	    	if( i == 0 ) {
 	    		fragment = new ContactsFragment();
 	    	} else if ( i ==1 ) {
-	    		fragment = new FacebookFragment();
+	    		fragment = new FbFragment();
 	    	}
 	        return fragment;
 	    }

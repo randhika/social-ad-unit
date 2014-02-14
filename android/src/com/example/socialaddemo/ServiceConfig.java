@@ -13,7 +13,7 @@ public class ServiceConfig {
 	}
 
 	// Check the IP address of the local server machine
-	private static final String PUBLIC_BETA_IP = "10.12.22.42:3000";
+	private static final String PUBLIC_BETA_IP = "192.168.1.3:3000";
 
 	//Change the values accordingly for test server and production server.
 	private static final String PUBLIC_SERVER_IP = "54.80.156.169";

@@ -22,6 +22,9 @@ import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.support.v4.app.Fragment;
+import android.text.Spannable;
+import android.text.style.RelativeSizeSpan;
+import android.text.style.StyleSpan;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -572,7 +575,7 @@ public class ContactsFragment extends Fragment {
 		mVolleyQueue.add(jsonRequest);	
 	}
 	
-	AlertDialog dialog = null;
+	CustomDialog customDialog = null;
 	private void showAd(String response) {
 
 		try {
@@ -588,14 +591,28 @@ public class ContactsFragment extends Fragment {
 			String contact_id = contactJson.getString("contact_id");
 			String phoneURI = "content://com.android.contacts/contacts/"+contact_id+"/photo";
 			
-			AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+			customDialog = new CustomDialog(ContactsFragment.this.getActivity());
 		    LayoutInflater inflater = ContactsFragment.this.getActivity().getLayoutInflater();
 		    View layout = inflater.inflate(R.layout.social_ad_layout, null);
 		    String messageFormat = getResources().getString(R.string.social_ad_alert);  
 		    String alertMsg = String.format(messageFormat, contactName, appName); 
-
 		    TextView tx = (TextView) layout.findViewById(R.id.alert);
-		    tx.setText(alertMsg);
+		    
+		    int nameStart = alertMsg.indexOf(contactName);
+		    int contactLenth = contactName.length();
+		    int appStart = alertMsg.indexOf(appName);
+		    int appLenth = appName.length();
+		    
+		    Spannable str = Spannable.Factory.getInstance().newSpannable(alertMsg);
+			str.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), nameStart, nameStart+contactLenth, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+			str.setSpan(new StyleSpan(android.graphics.Typeface.ITALIC), nameStart, nameStart+contactLenth, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+			str.setSpan(new RelativeSizeSpan(1.2f), nameStart, nameStart+contactLenth,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+			str.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), appStart, appStart+appLenth, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+			str.setSpan(new StyleSpan(android.graphics.Typeface.ITALIC), appStart, appStart+appLenth, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+			str.setSpan(new RelativeSizeSpan(1.2f), appStart, appStart+appLenth,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+		    tx.setText(str);
 		    tx.setTypeface(FontProvider.getHelveticaLightFont(mContext));
 	    
 		    ImageView profile = (RoundedImageView) layout.findViewById(R.id.friendicon);
@@ -603,7 +620,7 @@ public class ContactsFragment extends Fragment {
 			Bitmap bm = Util.decodeUri(mContext,Uri.parse(phoneURI),50);
 			profile.setImageBitmap(bm);
 			
-		    Button install = (Button) layout.findViewById(R.id.installnow);
+			ImageView install = (ImageView) layout.findViewById(R.id.installnow);
 		    install.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
@@ -613,7 +630,7 @@ public class ContactsFragment extends Fragment {
 					} catch (android.content.ActivityNotFoundException anfe) {
 					    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=" + appPackageName)));
 					}
-					dialog.dismiss();
+					customDialog.dismiss();
 				}
 			});
 	    		
@@ -621,14 +638,12 @@ public class ContactsFragment extends Fragment {
 		    close.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					dialog.dismiss();
+					customDialog.dismiss();
 				}
 			});
 		    
-		    builder.setView(layout);
-		    
-		    dialog = builder.create();
-		    dialog.show();
+		    customDialog.setContentView(layout);
+		    customDialog.show();
 		
 		} catch ( Exception e) {
 			e.printStackTrace();
@@ -672,7 +687,6 @@ public class ContactsFragment extends Fragment {
 			contact_id2 = contactJson.getString("contact_id");
 			phoneURI2 = "content://com.android.contacts/contacts/"+contact_id2+"/photo";
 
-			AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
 		    LayoutInflater inflater = ContactsFragment.this.getActivity().getLayoutInflater();
 		    View layout = inflater.inflate(R.layout.social_ad_layout1, null);
 		    String messageFormat = getResources().getString(R.string.social_ad_alert);  
@@ -680,14 +694,27 @@ public class ContactsFragment extends Fragment {
 		    String alertMsg1 = String.format(messageFormat, contactName1, appName1); 
 	
 		    TextView tx = (TextView) layout.findViewById(R.id.alert);
-		    tx.setText(alertMsg1);
+		    Spannable str = Spannable.Factory.getInstance().newSpannable(alertMsg1);
+
+		    int nameStart = alertMsg1.indexOf(contactName1);
+		    int contactLenth = contactName1.length();
+		    int appStart = alertMsg1.indexOf(appName1);
+		    int appLenth = appName1.length();
+		    
+			str.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), nameStart, nameStart+contactLenth, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+			str.setSpan(new RelativeSizeSpan(1.2f), nameStart, nameStart+contactLenth,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+			str.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), appStart, appStart+appLenth, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+			str.setSpan(new RelativeSizeSpan(1.2f), appStart, appStart+appLenth,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+		    tx.setText(str);
 		    tx.setTypeface(FontProvider.getHelveticaLightFont(mContext));
 		    
 		    ImageView profile = (ImageView) layout.findViewById(R.id.friendicon);
 			Bitmap bm = Util.decodeUri(mContext,Uri.parse(phoneURI1),50);
 			profile.setImageBitmap(bm);
 			
-		    Button install = (Button) layout.findViewById(R.id.installnow);
+			ImageView install = (ImageView) layout.findViewById(R.id.installnow);
 		    install.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
@@ -697,20 +724,33 @@ public class ContactsFragment extends Fragment {
 					} catch (android.content.ActivityNotFoundException anfe) {
 					    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=" + appPackageName1)));
 					}
-					dialog.dismiss();
+					customDialog.dismiss();
 				}
 			});
 		    
 		    TextView tx1 = (TextView) layout.findViewById(R.id.alert1);
 		    String alertMsg2 = String.format(messageFormat, contactName2, appName2); 
-		    tx1.setText(alertMsg2);
-		    tx1.setTypeface(FontProvider.getHelveticaLightFont(mContext));
+		    str = Spannable.Factory.getInstance().newSpannable(alertMsg2);
+
+		    nameStart = alertMsg2.indexOf(contactName2);
+		    contactLenth = contactName2.length();
+		    appStart = alertMsg2.indexOf(appName2);
+		    appLenth = appName2.length();
 		    
+			str.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), nameStart, nameStart+contactLenth, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+			str.setSpan(new RelativeSizeSpan(1.2f), nameStart, nameStart+contactLenth,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+			str.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), appStart, appStart+appLenth, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+			str.setSpan(new RelativeSizeSpan(1.2f), appStart, appStart+appLenth,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+		    tx1.setText(str);
+		    tx1.setTypeface(FontProvider.getHelveticaLightFont(mContext));		    
+
 		    ImageView profile1 = (ImageView) layout.findViewById(R.id.friendicon1);
 			bm = Util.decodeUri(mContext,Uri.parse(phoneURI2),50);
 			profile1.setImageBitmap(bm);
 			
-		    install = (Button) layout.findViewById(R.id.installnow1);
+		    install = (ImageView) layout.findViewById(R.id.installnow1);
 		    install.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
@@ -720,21 +760,20 @@ public class ContactsFragment extends Fragment {
 					} catch (android.content.ActivityNotFoundException anfe) {
 					    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=" + appPackageName2)));
 					}
-					dialog.dismiss();
+					customDialog.dismiss();
 				}
 			});
 	    		
-		    /*ImageView close = (ImageView) layout.findViewById(R.id.close);
+		    ImageView close = (ImageView) layout.findViewById(R.id.close);
 		    close.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					dialog.dismiss();
+					customDialog.dismiss();
 				}
-			});*/
+			});
 		    
-		    builder.setView(layout);		    
-		    dialog = builder.create();
-		    dialog.show();
+		    customDialog.setContentView(layout);
+		    customDialog.show();
 		
 		} catch ( Exception e) {
 			e.printStackTrace();

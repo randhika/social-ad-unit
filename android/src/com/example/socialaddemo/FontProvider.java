@@ -10,7 +10,7 @@ import android.text.style.StyleSpan;
 
 public class FontProvider {
 	
-	private final static String HERO_LIGHT = "HelveticaNeueMedium.ttf";
+	private final static String HERO_LIGHT = "HelveticaLight.ttf";
 	
 	static Typeface mHelveticaBoldFont;
 	static Typeface mHelveticaLightFont;

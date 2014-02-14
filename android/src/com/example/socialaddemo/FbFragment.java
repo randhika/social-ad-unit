@@ -55,7 +55,7 @@ import com.facebook.model.GraphUser;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-public class FacebookFragment extends Fragment {
+public class FbFragment extends Fragment {
 	
 	TextView textView;
 	ImageView imageView;
@@ -82,7 +82,7 @@ public class FacebookFragment extends Fragment {
 			if ( (exception instanceof FacebookOperationCanceledException ||
 					exception instanceof FacebookAuthorizationException)) {
 				System.out.println("###### AthenticationActivity SessionStatusCallback FacebookOperationCanceledException  ####### ");
-				new AlertDialog.Builder(FacebookFragment.this.getActivity())
+				new AlertDialog.Builder(FbFragment.this.getActivity())
 				.setTitle("Cancelled")
 				.setMessage("Permission not granted")
 				.setPositiveButton("OK", new 
@@ -112,10 +112,10 @@ public class FacebookFragment extends Fragment {
 		System.out.println("###### Authentication activity ####### "+ session);
 		if (session == null) {
 			if (savedInstanceState != null) {
-				session = Session.restoreSession(FacebookFragment.this.getActivity(), null, statusCallback, savedInstanceState);
+				session = Session.restoreSession(FbFragment.this.getActivity(), null, statusCallback, savedInstanceState);
 			}
 			if (session == null) {
-				session = new Session(FacebookFragment.this.getActivity());
+				session = new Session(FbFragment.this.getActivity());
 			}
 			System.out.println("###### Authentication activity ####### "+ session.toString());
 			Session.setActiveSession(session);
@@ -229,10 +229,10 @@ public class FacebookFragment extends Fragment {
 			public void onClick(View v) {
 				Session session = Session.getActiveSession();
 				if (!session.isOpened() && !session.isClosed()) {
-					session.openForRead(new Session.OpenRequest(FacebookFragment.this.getActivity()).
+					session.openForRead(new Session.OpenRequest(FbFragment.this.getActivity()).
 							setPermissions(READ_PERMISSIONS).setCallback(statusCallback).setRequestCode(100));
 				} else {
-					Session.openActiveSession(FacebookFragment.this.getActivity(), true, statusCallback);
+					Session.openActiveSession(FbFragment.this.getActivity(), true, statusCallback);
 				}				
 			}
 		}); 
@@ -477,7 +477,7 @@ public class FacebookFragment extends Fragment {
 				}
 				hideProgressDialog();
 				SharedPreferenceManager.setBoolean(SharedPreferenceManager.PreferenceKeys.IS_APPS_SENT1, true);
-				FacebookFragment.this.getActivity().runOnUiThread(new Runnable() {
+				FbFragment.this.getActivity().runOnUiThread(new Runnable() {
 					public void run() {
 						createAppsInstalled.setEnabled(false);
 					}
@@ -621,7 +621,7 @@ public class FacebookFragment extends Fragment {
 				try {
 					JSONArray responseArray = new JSONArray(response);
 					if( responseArray.length() == 0 ) {
-						AlertDialog.Builder builder = new AlertDialog.Builder(FacebookFragment.this.getActivity());
+						AlertDialog.Builder builder = new AlertDialog.Builder(FbFragment.this.getActivity());
 						builder.setTitle("No Ad");
 						 builder
 							.setMessage("No RelationShip Found for this device.")
@@ -635,7 +635,7 @@ public class FacebookFragment extends Fragment {
 							alertDialog.show();
 					}
 				} catch (Exception e) {					
-					AlertDialog.Builder builder = new AlertDialog.Builder(FacebookFragment.this.getActivity());
+					AlertDialog.Builder builder = new AlertDialog.Builder(FbFragment.this.getActivity());
 					builder.setTitle("No Ad");
 					 builder
 					.setMessage("No RelationShip Found for this device.")
@@ -674,7 +674,7 @@ public class FacebookFragment extends Fragment {
 		mVolleyQueue.add(jsonRequest);	
 	}
 	
-	AlertDialog dialog = null;
+	CustomDialog customDialog = null;
 	private void showAd(String response) {
 
 		try {
@@ -688,28 +688,22 @@ public class FacebookFragment extends Fragment {
 			JSONObject contactJson = resultJson.getJSONObject("contact");
 			String contactName = contactJson.getString("name");
 			String fbId = contactJson.getString("facebookid");
-			String phoneUrl = "http://graph.facebook.com/"+fbId+"/picture?type=large";
+			String phoneUrl = "http://graph.facebook.com1/"+fbId+"/picture?type=large";
 			
-			Dialog connectionDialog = new Dialog(FacebookFragment.this.getActivity(), R.style.alertdialog);
-            
-            
-            
-			AlertDialog.Builder builder = new AlertDialog.Builder(mContext,R.style.alertdialog);
-
-		    LayoutInflater inflater = FacebookFragment.this.getActivity().getLayoutInflater();
+			customDialog = new CustomDialog(FbFragment.this.getActivity());
+		    LayoutInflater inflater = FbFragment.this.getActivity().getLayoutInflater();
 		    View layout = inflater.inflate(R.layout.social_ad_layout, null);
 		    String messageFormat = getResources().getString(R.string.social_ad_alert1);  
 		    String alertMsg = String.format(messageFormat, contactName, appName); 
 
 		    TextView tx = (TextView) layout.findViewById(R.id.alert);
 	    
-		    Spannable str = Spannable.Factory.getInstance().newSpannable(alertMsg);
-
 		    int nameStart = alertMsg.indexOf(contactName);
 		    int contactLenth = contactName.length();
 		    int appStart = alertMsg.indexOf(appName);
 		    int appLenth = appName.length();
 		    
+		    Spannable str = Spannable.Factory.getInstance().newSpannable(alertMsg);
 			str.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), nameStart, nameStart+contactLenth, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 			str.setSpan(new StyleSpan(android.graphics.Typeface.ITALIC), nameStart, nameStart+contactLenth, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 			str.setSpan(new RelativeSizeSpan(1.2f), nameStart, nameStart+contactLenth,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -725,9 +719,9 @@ public class FacebookFragment extends Fragment {
 		    
 			SocialAdDemoVolley.getImageLoader().get(phoneUrl, 
 					ImageLoader.getImageListener(profile, 
-							R.drawable.close, 
+							R.drawable.ic_no_profile, 
 							//TODO Replace any error image.
-							R.drawable.close));
+							R.drawable.ic_no_profile));
 
 			ImageView install = (ImageView) layout.findViewById(R.id.installnow);
 		    install.setOnClickListener(new View.OnClickListener() {
@@ -739,7 +733,8 @@ public class FacebookFragment extends Fragment {
 					} catch (android.content.ActivityNotFoundException anfe) {
 					    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=" + appPackageName)));
 					}
-					dialog.dismiss();
+					//dialog.dismiss();
+					customDialog.dismiss();
 				}
 			});
 	    		
@@ -747,16 +742,13 @@ public class FacebookFragment extends Fragment {
 		    close.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					dialog.dismiss();
+					//dialog.dismiss();
+					customDialog.dismiss();
 				}
 			});
 		    
-		    builder.setView(layout);
-		    
-		    dialog = builder.create();
-		    //dialog.show();
-		    connectionDialog.setContentView(layout);
-		    connectionDialog.show();
+		    customDialog.setContentView(layout);
+		    customDialog.show();
 		
 		} catch ( Exception e) {
 			e.printStackTrace();
@@ -801,8 +793,8 @@ public class FacebookFragment extends Fragment {
 			fbId2 = contactJson.getString("facebookid");
 			phoneURl2 = "http://graph.facebook.com/"+fbId2+"/picture?type=large";
 
-			AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-		    LayoutInflater inflater = FacebookFragment.this.getActivity().getLayoutInflater();
+			customDialog = new CustomDialog(FbFragment.this.getActivity());
+		    LayoutInflater inflater = FbFragment.this.getActivity().getLayoutInflater();
 		    View layout = inflater.inflate(R.layout.social_ad_layout1, null);
 		    String messageFormat = getResources().getString(R.string.social_ad_alert1);  
 		    
@@ -818,11 +810,9 @@ public class FacebookFragment extends Fragment {
 		    
 			str.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), nameStart, nameStart+contactLenth, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 			str.setSpan(new RelativeSizeSpan(1.2f), nameStart, nameStart+contactLenth,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-			//str.setSpan(new ForegroundColorSpan(0xFFFF0000), nameStart, nameStart+contactLenth, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
 			str.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), appStart, appStart+appLenth, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 			str.setSpan(new RelativeSizeSpan(1.2f), appStart, appStart+appLenth,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-			//str.setSpan(new ForegroundColorSpan(0xFFFF0000), appStart, appStart+appLenth, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
 		    tx.setText(str);
 		    tx.setTypeface(FontProvider.getHelveticaLightFont(mContext));
@@ -830,9 +820,9 @@ public class FacebookFragment extends Fragment {
 		    ImageView profile = (ImageView) layout.findViewById(R.id.friendicon);
 			SocialAdDemoVolley.getImageLoader().get(phoneURl1, 
 					ImageLoader.getImageListener(profile, 
-							R.drawable.close, 
+							R.drawable.ic_no_profile, 
 							//TODO Replace any error image.
-							R.drawable.close));
+							R.drawable.ic_no_profile));
 			
 		    ImageView install = (ImageView) layout.findViewById(R.id.installnow);
 		    install.setOnClickListener(new View.OnClickListener() {
@@ -844,7 +834,7 @@ public class FacebookFragment extends Fragment {
 					} catch (android.content.ActivityNotFoundException anfe) {
 					    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=" + appPackageName1)));
 					}
-					dialog.dismiss();
+					customDialog.dismiss();
 				}
 			});
 		    
@@ -860,11 +850,9 @@ public class FacebookFragment extends Fragment {
 		    
 			str.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), nameStart, nameStart+contactLenth, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 			str.setSpan(new RelativeSizeSpan(1.2f), nameStart, nameStart+contactLenth,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-			//str.setSpan(new ForegroundColorSpan(0xFFFF0000), nameStart, nameStart+contactLenth, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
 			str.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), appStart, appStart+appLenth, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 			str.setSpan(new RelativeSizeSpan(1.2f), appStart, appStart+appLenth,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-			//str.setSpan(new ForegroundColorSpan(0xFFFF0000), appStart, appStart+appLenth, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
 		    tx1.setText(str);
 		    tx1.setTypeface(FontProvider.getHelveticaLightFont(mContext));
@@ -873,9 +861,9 @@ public class FacebookFragment extends Fragment {
 		    ImageView profile1 = (ImageView) layout.findViewById(R.id.friendicon1);
 			SocialAdDemoVolley.getImageLoader().get(phoneURl2, 
 					ImageLoader.getImageListener(profile1, 
-							R.drawable.close, 
+							R.drawable.ic_no_profile, 
 							//TODO Replace any error image.
-							R.drawable.close));
+							R.drawable.ic_no_profile));
 			
 		    install = (ImageView) layout.findViewById(R.id.installnow1);
 		    install.setOnClickListener(new View.OnClickListener() {
@@ -887,7 +875,7 @@ public class FacebookFragment extends Fragment {
 					} catch (android.content.ActivityNotFoundException anfe) {
 					    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=" + appPackageName2)));
 					}
-					dialog.dismiss();
+					customDialog.dismiss();
 				}
 			});
 	    		
@@ -895,13 +883,13 @@ public class FacebookFragment extends Fragment {
 		    close.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					dialog.dismiss();
+					customDialog.dismiss();
 				}
 			});
 		    
-		    builder.setView(layout);		    
-		    dialog = builder.create();
-		    dialog.show();
+		    customDialog.setContentView(layout);
+		    customDialog.show();
+		    
 		
 		} catch ( Exception e) {
 			e.printStackTrace();
